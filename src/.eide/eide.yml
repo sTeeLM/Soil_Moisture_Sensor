@@ -35,7 +35,7 @@ targets:
             language-c: c99
           global:
             device: mcs51
-            misc-controls: --iram-size 256 --xram-size 0 --code-size 8192
+            misc-controls: --iram-size 256 --xram-size 1024 --code-size 17408
             optimize-type: speed
           linker:
             $mainFileName: main
