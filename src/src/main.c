@@ -6,6 +6,8 @@
 #include <stc8g.h>
 #include <stdio.h>
 
+#include "system.h"
+
 void delay_100ms(void) //@12MHz
 {
     unsigned char i, j;
@@ -22,9 +24,11 @@ void delay_100ms(void) //@12MHz
 
 void main(void)
 {
+    void system_init(void);
+
     while (1)
     {
-        P00 = !P00;
+        P12 = !P12;
         delay_100ms();
     }
 }

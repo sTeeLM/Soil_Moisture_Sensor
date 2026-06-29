@@ -43,6 +43,6 @@ targets:
     uploadConfigMap:
       Custom:
         bin: ""
-        commandLine: python ./tools/stcflash.py -p COM3 "${hexFile}"
+        commandLine: stcgal -a -p /dev/cu.wchusbserial110 "${programFile}"
         eraseChipCommand: ""
     uploader: Custom

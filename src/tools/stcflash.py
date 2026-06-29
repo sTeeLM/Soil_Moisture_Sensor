@@ -1,5 +1,13 @@
 #!/usr/bin/env python
-#coding=utf-8
+# coding=utf-8
+
+# !!! Notice !!!
+# Python (>=2.6) and its serial port extension model pySerial are required to run stcflash. 
+# Python is most likely pre-installed if you are using a mainstream Linux distribution or OS X. 
+# Module pySerial, on the other hand, might need to be installed manually. 
+# For example, on some versions of Ubuntu, you must install package python-serial (or python3-serial for Python 3) to get pySerial. 
+# For operating system without a package management system like Windows, please refer pySerial's installation manual for further assistance.
+
 # stcflash  Copyright (C) 2013  laborer (laborer@126.com)
 
 # This program is free software: you can redistribute it and/or modify
@@ -14,7 +22,6 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 
 import time
 import logging
