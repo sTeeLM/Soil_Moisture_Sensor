@@ -3,5 +3,5 @@
 
 void moisture_initialize(void)
 {
-    
+  CDBG("moisture init");
 }

@@ -38,7 +38,7 @@ struct sm_function_slot {
 extern uint8_t sm_cur_function;
 extern uint8_t sm_cur_state;
 
-void sm_initialize(bit go_on);
+void sm_initialize();
 
 void sm_run(enum task_events ev);
 

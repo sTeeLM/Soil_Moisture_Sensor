@@ -43,6 +43,7 @@
 *.lnp
 *.ORC
 *.M51
+*.bin
 
 # Debug files
 *.dSYM/

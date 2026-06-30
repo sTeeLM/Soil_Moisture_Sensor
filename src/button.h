@@ -5,12 +5,9 @@
 #include "task.h"
 
 #include <stdint.h>
+#include <stdbool.h>
 
 void button_initialize(void);
 void button_scan_proc(enum task_events ev);
-void button_mod_proc(enum task_events ev);
-uint8_t button_get_down_cnt(void);
-void button_reset_down_cnt(void);
-bit button_int_cb(uint8_t old_state, uint8_t new_state);
-bit key_mod_pressed(void);
+void button_proc(enum task_events ev);
 #endif

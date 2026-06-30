@@ -19,10 +19,10 @@ const char * code task_names[] =
   "EV_ADP_OFF",
   "EV_250MS",
   "EV_1S",
-  "EV_KEY_MOD_DOWN",  
-  "EV_KEY_MOD_PRESS",
-  "EV_KEY_MOD_LPRESS",
-  "EV_KEY_MOD_UP",
+  "EV_KEY_DOWN",  
+  "EV_KEY_PRESS",
+  "EV_KEY_LPRESS",
+  "EV_KEY_UP",
   "EV_TIMEO",
   "EV_LP",
 };
@@ -63,7 +63,7 @@ uint16_t ev_bits1;
 
 void task_initialize (void)
 {
-  CDBG("task_initialize\n");
+  CDBG("task init");
   ev_bits0 = 0;
   ev_bits1 = 0;
 }
@@ -83,6 +83,6 @@ void task_dump(void)
 {
   uint8_t i;
   for (i = 0 ; i < EV_CNT; i ++) {
-    CDBG("[%02bd][%s] %c\n", i, task_names[i], task_test(i) ? '1' : '0');
+    CDBG("[%02bd][%s] %c", i, task_names[i], task_test(i) ? '1' : '0');
   }
 }

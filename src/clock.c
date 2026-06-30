@@ -11,7 +11,7 @@ static uint32_t sec_now;
 static uint8_t timer_sec;
 void clock_initialize(void)
 {
-  CDBG("clock_initialize\n");
+  CDBG("clock init");
   // 输出时钟频率 = (SYSclk)/12/(65536-[RL_TH0, RL_TL0])/2 = 16HZ
   TR0 = 0;        //定时器禁止工作
   AUXR &= ~0x80;		//定时器时钟12T模式

@@ -16,8 +16,8 @@ static unsigned   char  istart;                 // receiving buffer start index
 static unsigned   char  iend;                   // receiving buffer end index
 static char idata inbuf[ILEN];                  // storage for receiving buffer
 
-bit sendfull;                                   // flag: marks transmit buffer full
-bit sendactive;                                 // flag: marks transmitter active
+static bit sendfull;                                   // flag: marks transmit buffer full
+static bit sendactive;                                 // flag: marks transmitter active
 
 /*--------------------------------------------------------------------------------
  * Serial Interrupt Service Routine
@@ -74,12 +74,6 @@ void com_initialize (void) {
   ES = 1;                                      // enable serial interrupts
 
 }
-
-//   SCON  = 0xDA;        // SCON: mode 1, 8-bit UART, enable rcvr      */
-//   TMOD |= 0x20;        // TMOD: timer 1, mode 2, 8-bit reload        */
-//   TH1   = 0xFD;        // TH1:  reload value for 1200 baud @ 12MHz   */
-//   TR1   = 1;           // TR1:  timer 1 run                          */
-//   TI    = 1;           // TI:   set TI to send first char of UART    */
 
 /*--------------------------------------------------------------------------------
  * putbuf: write a character to SBUF or transmission buffer
