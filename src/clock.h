@@ -10,5 +10,4 @@ uint32_t clock_diff_now_sec(uint32_t sec);
 void clock_set_timer(uint8_t timer_sec);
 uint32_t clock_get_now_jiff(void);
 uint32_t clock_diff_now_jiff(uint32_t saved_jiff);
-
 #endif

@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "gpio.h"
 #include "adc.h"
+#include "delay.h"
 
 void power_initialize(void)
 {
@@ -27,13 +28,24 @@ void power_enable(bool enable)
 }
 uint16_t power_get_vol(void)
 {
-  int32_t adc_val = (int32_t) adc_get_val(15);
+  int32_t ref_val;
+  int32_t power_val;
   int32_t vol;
-  // 0x3ff-> vol
-  // adc_val  -> 1185 mV
+  
+  GPIO_POWER_VOL_EN = 1;
+  
+  delay_10us(100); // 等待buffer电容充电
+   
+  ref_val = (int32_t) adc_get_val(15);
+  power_val = (int32_t) adc_get_val(7);
+  
+  GPIO_POWER_VOL_EN = 0;
+ 
+  // power_val-> vol
+  // ref_val  -> 1185 mV
   // 求电源电压 vol
-  // 电源电压 vol = 1185 * 0x3ff / adc_val;
-  vol = (uint16_t)(((int32_t)1185 * 0x3ff) / adc_val);
+  // 电源电压 vol = 1185 * power_val / ref_val;
+  vol = (uint16_t)(((int32_t)1185 * power_val) / ref_val);
   return vol;
 }
 

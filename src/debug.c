@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "debug.h"
+#include "clock.h"
 
 static bit debug_is_on;
   
@@ -17,10 +18,12 @@ void debug_onoff(bool enable)
 void debug_printf(const char * fmt, ...)
 { 
   va_list arg_ptr;
+  uint32_t jiff = clock_get_now_jiff();
   if(debug_is_on) {
+    printf("[%08ld.%02d] ", jiff / 16, jiff % 16);
     va_start (arg_ptr, fmt); /* format string */
     vprintf (fmt, arg_ptr);
-    printf("\n");
     va_end (arg_ptr);
+    printf("\n");
   }
 }

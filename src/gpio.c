@@ -5,24 +5,29 @@ void gpio_initialize(void)
 {
   CDBG("gpio init");
   
-  // 串口0设置为双向
+  // 串口1设置为双向
   gpio_set_mode(GPIO_SERIAL_RXD_PORT, GPIO_SERIAL_RXD_BIT, GPIO_MODE_BID);
   gpio_set_mode(GPIO_SERIAL_TXD_PORT, GPIO_SERIAL_TXD_BIT, GPIO_MODE_BID);
   
-  // 串口1设置为双向
+  // 串口2设置为双向
   gpio_set_mode(GPIO_BT_RXD_PORT, GPIO_BT_RXD_BIT, GPIO_MODE_BID);
   gpio_set_mode(GPIO_BT_TXD_PORT, GPIO_BT_TXD_BIT, GPIO_MODE_BID);
+  GPIO_BT_EN = 0;
+  gpio_set_mode(GPIO_BT_EN_PORT, GPIO_BT_EN_BIT, GPIO_MODE_PULL_PUSH_OUT);
   
   // i2c 设置为双向
   gpio_set_mode(GPIO_I2C_SDA_PORT, GPIO_I2C_SDA_BIT, GPIO_MODE_BID);
   gpio_set_mode(GPIO_I2C_SCL_PORT, GPIO_I2C_SCL_BIT, GPIO_MODE_BID);
   
   // Power Manager
-  gpio_set_mode(GPIO_POWER_EN_PORT, GPIO_POWER_EN_BIT, GPIO_MODE_PULL_PUSH_OUT);
   GPIO_POWER_EN = 0;
+  gpio_set_mode(GPIO_POWER_EN_PORT, GPIO_POWER_EN_BIT, GPIO_MODE_PULL_PUSH_OUT);
   gpio_set_mode(GPIO_POWER_CHRG_PORT, GPIO_POWER_CHRG_BIT, GPIO_MODE_IN);
   gpio_set_mode(GPIO_POWER_STDBY_PORT, GPIO_POWER_STDBY_BIT, GPIO_MODE_IN);
   gpio_set_mode(GPIO_POWER_SOL_PORT, GPIO_POWER_SOL_BIT, GPIO_MODE_BID);
+  GPIO_POWER_VOL_EN = 0;
+  gpio_set_mode(GPIO_POWER_VOL_EN_PORT, GPIO_POWER_VOL_EN_BIT, GPIO_MODE_PULL_PUSH_OUT);
+  gpio_set_mode(GPIO_POWER_VOL_PORT, GPIO_POWER_VOL_BIT, GPIO_MODE_IN);
   
   // Button
   gpio_set_mode(GPIO_KEY_INT_PORT, GPIO_KEY_INT_BIT, GPIO_MODE_IN);
@@ -32,6 +37,8 @@ void gpio_initialize(void)
   
   // Moisture Sensor
   gpio_set_mode(GPIO_MOI_SENSOR_ADC_PORT, GPIO_MOI_SENSOR_ADC_BIT, GPIO_MODE_IN);
+  GPIO_MOI_PWM = 0;
+  gpio_set_mode(GPIO_MOI_PWM_PORT, GPIO_MOI_PWM_BIT, GPIO_MODE_PULL_PUSH_OUT);  
   
   // OLED
   gpio_set_mode(GPIO_OLED_EN_PORT, GPIO_OLED_EN_BIT, GPIO_MODE_IN);
