@@ -1,5 +1,5 @@
 #include <STC8G.H>
-
+#include <string.h>
 #include "clock.h"
 #include "sm.h"
 #include "debug.h"
@@ -9,6 +9,9 @@
 static uint32_t jiff;
 static uint32_t sec_now;
 static uint8_t timer_sec;
+
+static clock_struct_t clk;
+
 void clock_initialize(void)
 {
   CDBG("clock init");
@@ -20,16 +23,53 @@ void clock_initialize(void)
 	TH0 = 0x0F;			//设置定时初始值
 	ET0 = 0;			  //禁止定时器中断
   
+  memset(&clk, 0, sizeof(clk));
+  
   sec_now = 0;
   jiff    = 0;
   
   TR0 = 1;        //定时器允许工作
   ET0 = 1;        //定时器允许中断
+  
+}
+
+uint32_t clock_get_hour(void)
+{
+  return clk.hour;
+}
+
+uint8_t clock_get_min(void)
+{
+  return clk.min;
+}
+
+uint8_t clock_get_sec(void)
+{
+  return clk.sec;
+}
+
+uint8_t clock_get_ms625(void)
+{
+  return clk.ms625;
 }
 
 static void clock_isr (void) interrupt 1 using 1
 {
+  clk.ms625 ++;
   jiff ++;
+  if((clk.ms625 % 16) == 0 ) {
+    clk.ms625 = 0;
+    ++ clk.sec;
+    clk.sec = clk.sec % 60;
+    task_set(EV_1S);
+    if(clk.sec == 0) {
+      ++ clk.min;
+      clk.min %=  60;
+      if(clk.min == 0) {
+        ++ clk.hour;
+      }
+    } 
+  }  
   if(jiff % 4 == 0) {
     task_set(EV_250MS);
     if(jiff % 16 == 0) {
