@@ -456,6 +456,16 @@
               <FileType>1</FileType>
               <FilePath>.\cext.c</FilePath>
             </File>
+            <File>
+              <FileName>i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>oled.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\oled.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

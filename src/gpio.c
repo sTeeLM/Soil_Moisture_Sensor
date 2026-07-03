@@ -41,7 +41,7 @@ void gpio_initialize(void)
   gpio_set_mode(GPIO_MOI_PWM_PORT, GPIO_MOI_PWM_BIT, GPIO_MODE_PULL_PUSH_OUT);  
   
   // OLED
-  gpio_set_mode(GPIO_OLED_EN_PORT, GPIO_OLED_EN_BIT, GPIO_MODE_IN);
+  gpio_set_mode(GPIO_OLED_EN_PORT, GPIO_OLED_EN_BIT, GPIO_MODE_PULL_PUSH_OUT);
 }
 
 void gpio_set_mode(uint8_t port, uint8_t bits, gpio_mode_t mode)

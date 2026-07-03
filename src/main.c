@@ -6,6 +6,8 @@
 #include "debug.h"
 #include "clock.h"
 #include "gpio.h"
+#include "i2c.h"
+#include "oled.h"
 #include "power.h"
 #include "moisture.h"
 #include "bt.h"
@@ -23,8 +25,9 @@ void main(void)
   debug_onoff(1);
   
   gpio_initialize();
+  i2c_initialize();
   adc_initialize(); // must before power
-  
+  oled_initialize();
   power_initialize();
   
   if(!power_adapter_on()) {
@@ -44,7 +47,12 @@ void main(void)
   task_initialize();
   sm_initialize();
   
+  oled_enable(1);
+  oled_fill_rect(0, 0, 20, 20, true);
+  oled_redraw_buffer();
   while (1) {
-    task_run();
+    //task_run();
+    power_dump();
+    delay_ms(3000);
   }
 }
