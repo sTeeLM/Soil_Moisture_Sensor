@@ -46,13 +46,16 @@ void main(void)
   
   task_initialize();
   sm_initialize();
+ 
   
-  oled_enable(1);
-  oled_fill_rect(0, 0, 20, 20, true);
-  oled_redraw_buffer();
   while (1) {
     //task_run();
     power_dump();
-    delay_ms(3000);
+    oled_enable(1);  
+    oled_fill_rect(0, 0, 20, 20, true);
+    oled_redraw_buffer();
+    delay_ms(10000); 
+    oled_enable(0);
+    delay_ms(10000); 
   }
 }

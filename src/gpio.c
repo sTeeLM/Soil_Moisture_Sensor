@@ -16,8 +16,8 @@ void gpio_initialize(void)
   gpio_set_mode(GPIO_BT_EN_PORT, GPIO_BT_EN_BIT, GPIO_MODE_PULL_PUSH_OUT);
   
   // i2c 设置为双向
-  gpio_set_mode(GPIO_I2C_SDA_PORT, GPIO_I2C_SDA_BIT, GPIO_MODE_BID);
-  gpio_set_mode(GPIO_I2C_SCL_PORT, GPIO_I2C_SCL_BIT, GPIO_MODE_BID);
+  gpio_set_mode(GPIO_I2C_SDA_PORT, GPIO_I2C_SDA_BIT, GPIO_MODE_IN);
+  gpio_set_mode(GPIO_I2C_SCL_PORT, GPIO_I2C_SCL_BIT, GPIO_MODE_IN);
   
   // Power Manager
   GPIO_POWER_EN = 0;

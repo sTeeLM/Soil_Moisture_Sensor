@@ -291,7 +291,7 @@ void oled_set_charge_pump(bool enable)
 }
 
 /////////////////////////
-
+static bit oled_enabled;
 static void oled_reset(void)
 {
   CDBG("oled reset");
@@ -321,15 +321,23 @@ static void oled_reset(void)
 void oled_initialize(void)
 {
   CDBG("oled init");
+  oled_enabled = false;
   oled_enable(false);
 }
 
 void oled_enable(bool enable)
 {
-  GPIO_OLED_EN = enable;
-  if(enable) {
-    delay_10us(10);
+  if(enable && !oled_enabled) {
+    i2c_enable(true);
+    GPIO_OLED_EN = 1;
+    delay_ms(10);
     oled_reset();
+    oled_enabled = 1;
+  } else if(!enable && oled_enabled){
+    oled_display_onoff(false);
+    GPIO_OLED_EN = 0;
+    i2c_enable(false);
+    oled_enabled = 0;
   }
 }
 

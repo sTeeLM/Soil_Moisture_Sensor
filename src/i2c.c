@@ -25,6 +25,15 @@ void i2c_initialize(void)
   P_SW2 &= 0x7f;
   
   i2c_busy = 0;
+  
+  i2c_enable(false);
+  
+}
+
+void i2c_enable(bool enable)
+{
+  gpio_set_mode(GPIO_I2C_SDA_PORT, GPIO_I2C_SDA_BIT, enable ? GPIO_MODE_BID : GPIO_MODE_IN);
+  gpio_set_mode(GPIO_I2C_SCL_PORT, GPIO_I2C_SCL_BIT, enable ? GPIO_MODE_BID : GPIO_MODE_IN);  
 }
 
 static void i2c_isr() interrupt 24 using 2
