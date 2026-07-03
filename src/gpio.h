@@ -85,7 +85,7 @@ sbit GPIO_LW_INT         = GPIO_SBIT(GPIO_LW_INT_PORT, GPIO_LW_INT_BIT);
 
 // Moisture Sensor
 #define GPIO_MOI_SENSOR_ADC_PORT    GPIO_PORT_P1
-#define GPIO_MOI_SENSOR_ADC_BIT     2             // ADC CH 4
+#define GPIO_MOI_SENSOR_ADC_BIT     2            
 #define GPIO_MOI_PWM_PORT           GPIO_PORT_P3
 #define GPIO_MOI_PWM_BIT            5
 sbit GPIO_MOI_SENSOR_ADC = GPIO_SBIT(GPIO_MOI_SENSOR_ADC_PORT, GPIO_MOI_SENSOR_ADC_BIT); // ADC2

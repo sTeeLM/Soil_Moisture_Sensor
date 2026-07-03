@@ -8,7 +8,7 @@
 
 enum sm_functions
 {
-  SM_FIREFLY  = 0,   // 主功能
+  SM_MAIN  = 0,   // 主功能
 };
 
 typedef void (*SM_PROC)(uint8_t to_func, uint8_t to_state, enum task_events ev);
@@ -42,10 +42,5 @@ void sm_initialize();
 
 void sm_run(enum task_events ev);
 
-void sm_enter_control(void);
-void sm_leave_control(void);
-
-void sm_enter_shell(void);
-void sm_leave_shell(void);
 
 #endif

@@ -2,13 +2,15 @@
 
 #include "debug.h"
 
+//#include "sm_main.h"
+
 uint8_t sm_cur_function;
 uint8_t sm_cur_state;
 
 static const struct sm_function_slot code sm_function[] =
 {
-//  {"SM_FIREFLY", sm_function_firefly}, 
-   {"SM_FIREFLY", NULL},
+  //{"SM_MAIN", sm_function_main}, 
+  {"SM_MAIN", NULL}, 
 };
 
 uint8_t sm_cur_function;
@@ -17,24 +19,10 @@ uint8_t sm_cur_state;
 void sm_initialize(void)
 {
   CDBG(("sm init"));
-  sm_cur_function = SM_FIREFLY;
-  //sm_cur_state = go_on ? SM_FIREFLY_INIT : SM_FIREFLY_POWER_OFF;
+  sm_cur_function = SM_MAIN;
+  //sm_cur_state    = SM_MAIN_INIT
   task_set(EV_INIT);
 }
-
-void sm_enter_shell(void)
-{
-  CDBG(("sm_enter_shell"));
-}
-
-void sm_leave_shell(void)
-{
-  CDBG(("sm_leave_shell"));
-  //sm_cur_function = SM_FIREFLY;
-  //sm_cur_state = SM_FIREFLY_INIT;
-  task_set(EV_INIT);
-}
-
 
 void sm_run(enum task_events ev)
 {

@@ -11,7 +11,7 @@ void power_initialize(void)
 
 bool power_adapter_on(void)
 {
-  if(GPIO_POWER_CHRG == 1 && GPIO_POWER_STDBY == 1)
+  if((GPIO_POWER_CHRG == 1 && GPIO_POWER_STDBY == 1) || GPIO_POWER_CHRG == 0 && GPIO_POWER_STDBY == 0)
     return false;
   
   return true;
@@ -30,7 +30,7 @@ uint16_t power_get_vol(void)
 {
   int32_t ref_val;
   int32_t power_val;
-  int32_t vol;
+  int16_t vol;
   
   GPIO_POWER_VOL_EN = 1;
   
