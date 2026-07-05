@@ -2,15 +2,14 @@
 
 #include "debug.h"
 
-//#include "sm_main.h"
+#include "sm_main.h"
 
 uint8_t sm_cur_function;
 uint8_t sm_cur_state;
 
 static const struct sm_function_slot code sm_function[] =
 {
-  //{"SM_MAIN", sm_function_main}, 
-  {"SM_MAIN", NULL}, 
+  {"SM_MAIN", sm_function_main}, 
 };
 
 uint8_t sm_cur_function;

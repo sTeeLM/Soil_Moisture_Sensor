@@ -8,6 +8,7 @@
 #include "cext.h"
 #include "delay.h"
 
+static bit bt_is_enabled;
 
 #define    OLEN  32                             // size of serial transmission buffer
 static unsigned   char  ostart;                 // transmission buffer start index
@@ -51,9 +52,75 @@ char c;
   }
 }
 
+/*
+  const uint8_t * head;
+  uint8_t head_len;
+  const uint8_t * tail;
+  uint8_t tail_len;
+  uint8_t * buffer;
+  uint8_t buffer_len;
+*/
+
+static bool bt_read_res(void)
+{
+  bt_read_frame_param_t p;
+  uint8_t buffer[32];
+  
+  p.head="OK";
+  p.head_len = 2 ;
+  p.tail="\r\n";
+  p.tail_len = 2;
+  p.buffer = buffer;
+  p.buffer_len = 32;
+  if(bt_read_frame(&p) == 4 && buffer[0] == 'O' && buffer[1] == 'K')
+    return true;
+  return false;
+}
+
+
+void bt_report_data(uint16_t power, uint16_t mol)
+{
+  uint8_t buffer[32];
+  
+  CDBG("bt_report_data %u %u", power, mol);
+  
+  bt_enable(true);
+  delay_ms(100);
+  
+  do {
+    
+    // 关闭广播
+    bt_send_buffer("AT+ENADV=0\r\n", 12);
+    if(!bt_read_res())
+      break;
+    
+    // 设置广播数据
+    bt_send_buffer("AT+TEADV=HEX\r\n",12);
+    if(!bt_read_res())
+      break;
+    
+    // 设置发射功率10dbm
+    bt_send_buffer("AT+POWE=10\r\n",12);
+    if(!bt_read_res())
+      break;
+    
+    // 开启广播
+    bt_send_buffer("AT+ENADV=1\r\n", 12);
+    if(!bt_read_res())
+      break;
+        
+  } while(0);
+}
+
+bit bt_enabled(void)
+{
+  return bt_is_enabled;
+}
+
 void bt_enable(bool enable)
 {
-  if(enable) {
+  CDBG("bt_enable %bd", enable ? 1 : 0);
+  if(enable && !bt_is_enabled) {
     istart = 0;                                  // empty transmit buffers
     iend = 0;
     ostart = 0;                                  // empty transmit buffers
@@ -72,19 +139,27 @@ void bt_enable(bool enable)
     S2CON |= 0x10;  //S2REN = 1;
     IE2 |= 1;    //ES2 = 1;   
     
-  } else {
+    gpio_set_mode(GPIO_BT_RXD_PORT, GPIO_BT_RXD_BIT, GPIO_MODE_BID);
+    gpio_set_mode(GPIO_BT_TXD_PORT, GPIO_BT_TXD_BIT, GPIO_MODE_BID);
+    
+  } else if(!enable && bt_is_enabled) {
     S2CON &= ~0x10;
     IE2 &= ~0x1;
+    
+      // 设置为高阻输入，避免漏电
+    gpio_set_mode(GPIO_BT_RXD_PORT, GPIO_BT_RXD_BIT, GPIO_MODE_IN);
+    gpio_set_mode(GPIO_BT_TXD_PORT, GPIO_BT_TXD_BIT, GPIO_MODE_IN);
+    
   }
-  // 设置为高阻输入，避免漏电
-  gpio_set_mode(GPIO_BT_RXD_PORT, GPIO_BT_RXD_BIT, enable ? GPIO_MODE_BID : GPIO_MODE_IN);
-  gpio_set_mode(GPIO_BT_TXD_PORT, GPIO_BT_TXD_BIT, enable ? GPIO_MODE_BID : GPIO_MODE_IN);
+
   GPIO_BT_EN = enable;  
+  bt_is_enabled = enable;
 }
 
 void bt_initialize(void)
 {
   CDBG("bt init");
+  bt_is_enabled = true;
   bt_enable(false);
 }
 

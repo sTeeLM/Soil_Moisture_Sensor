@@ -12,6 +12,7 @@
 #include "moisture.h"
 #include "bt.h"
 #include "adc.h"
+#include "tdc.h"
 #include "task.h"
 #include "sm.h"
 
@@ -29,6 +30,7 @@ void main(void)
   adc_initialize(); // must before power
   oled_initialize();
   power_initialize();
+  tdc_initialize();
   
   if(!power_adapter_on()) {
     CDBG("power adapter NOT on, close serial");
@@ -49,13 +51,6 @@ void main(void)
  
   
   while (1) {
-    //task_run();
-    power_dump();
-    oled_enable(1);  
-    oled_fill_rect(0, 0, 20, 20, true);
-    oled_redraw_buffer();
-    delay_ms(10000); 
-    oled_enable(0);
-    delay_ms(10000); 
+    task_run();
   }
 }

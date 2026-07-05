@@ -4,6 +4,7 @@
 #include "sm.h"
 #include "debug.h"
 #include "task.h"
+#include "power.h"
 
 // 时钟频率 11059200 HZ
 static uint32_t jiff;
@@ -15,12 +16,12 @@ static clock_struct_t clk;
 void clock_initialize(void)
 {
   CDBG("clock init");
-  // 输出时钟频率 = (SYSclk)/12/(65536-[RL_TH0, RL_TL0])/2 = 16HZ
+  // 输出时钟频率 = (SYSclk)/12/(65536-[RL_TH0, RL_TL0])/2 = 1600HZ
   TR0 = 0;        //定时器禁止工作
-  AUXR &= ~0x80;		//定时器时钟12T模式
-	TMOD &= 0xF0;		//设置定时器模式，16位自动重载
-	TL0 = 0x80;			//设置定时初始值
-	TH0 = 0x0F;			//设置定时初始值
+	AUXR &= 0x7F;			//定时器时钟12T模式
+	TMOD &= 0xF0;			//设置定时器模式
+	TL0 = 0x40;				//设置定时初始值
+	TH0 = 0xF9;				//设置定时初始值
 	ET0 = 0;			  //禁止定时器中断
   
   memset(&clk, 0, sizeof(clk));
@@ -48,7 +49,7 @@ uint8_t clock_get_sec(void)
   return clk.sec;
 }
 
-uint8_t clock_get_ms625(void)
+uint16_t clock_get_ms625(void)
 {
   return clk.ms625;
 }
@@ -57,11 +58,14 @@ static void clock_isr (void) interrupt 1 using 1
 {
   clk.ms625 ++;
   jiff ++;
-  if((clk.ms625 % 16) == 0 ) {
+  if((clk.ms625 % 1600) == 0 ) {
     clk.ms625 = 0;
     ++ clk.sec;
-    clk.sec = clk.sec % 60;
     task_set(EV_1S);
+    clk.sec = clk.sec % 60;
+    if((clk.sec % 10) == 0) {
+       task_set(EV_10S);
+    }
     if(clk.sec == 0) {
       ++ clk.min;
       clk.min %=  60;
@@ -70,11 +74,9 @@ static void clock_isr (void) interrupt 1 using 1
       }
     } 
   }  
-  if(jiff % 4 == 0) {
-    task_set(EV_250MS);
-    if(jiff % 16 == 0) {
+  if(jiff % 400 == 0) {
+    if(jiff % 1600 == 0) {
       sec_now ++;
-      task_set(EV_1S);
       if(timer_sec) {
         if(!(--timer_sec)) {
           task_set(EV_TIMEO);

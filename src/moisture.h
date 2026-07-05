@@ -6,5 +6,6 @@
 
 void moisture_initialize(void);
 void moisture_enable(bool enable);
-float moisture_get_data(void);
+uint16_t moisture_get_data(void);
+void moisture_probe(void);
 #endif // __SOL_MOISTURE_H__

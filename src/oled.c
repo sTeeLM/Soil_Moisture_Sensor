@@ -16,7 +16,8 @@ static void oled_send_command(uint8_t cmd)
 {
   bool ret = i2c_send_buffer(OLED_I2C_ADDR, 0x00, I2C_ADDR_MODE_8BIT, &cmd, 1);
   // Assume i2c_write(OLED_I2C_ADDR, 0x00, &cmd, 1);
-  CDBG("[CMD][%bd] %02bX",  ret ? 1 : 0, cmd);
+  //delay_ms(100);
+  //CDBG("[CMD][%bd] %02bX",  ret ? 1 : 0, cmd);
   
 }
 
@@ -24,7 +25,8 @@ static void oled_send_data(uint8_t dat)
 {
   // Assume i2c_write(OLED_I2C_ADDR, 0x40, &data, 1);
   bool ret = i2c_send_buffer(OLED_I2C_ADDR, 0x40, I2C_ADDR_MODE_8BIT, &dat, 1);
-  CDBG("[DAT][%bd] %02bX", ret ? 1 : 0, dat);
+  //delay_ms(100);
+  //CDBG("[DAT][%bd] %02bX", ret ? 1 : 0, dat);
 }
 
 static void oled_send_data_buffer(const uint8_t * addr, size_t size)
@@ -322,7 +324,6 @@ void oled_initialize(void)
 {
   CDBG("oled init");
   oled_enabled = false;
-  oled_enable(false);
 }
 
 void oled_enable(bool enable)
@@ -330,7 +331,7 @@ void oled_enable(bool enable)
   if(enable && !oled_enabled) {
     i2c_enable(true);
     GPIO_OLED_EN = 1;
-    delay_ms(10);
+    delay_ms(100);
     oled_reset();
     oled_enabled = 1;
   } else if(!enable && oled_enabled){

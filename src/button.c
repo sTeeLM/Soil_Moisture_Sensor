@@ -22,11 +22,19 @@ void button_initialize(void)
 {
   key_down = 0;
   key_lpress_send = 0;
+  IT0 = 0; //使能INT0 上升沿和下降沿中断
+  EX0 = 1; //使能INT0 中断  
+}
+
+static void button_isr() interrupt 2 using 2
+{
+  if(GPIO_KEY_INT) // 仅测试上升沿
+    task_set(EV_EX_INT);
 }
 
 void button_scan_proc(enum task_events ev)
 {
-  if(!GPIO_KEY_INT) {
+  if(GPIO_KEY_INT) {
     if(key_down == 0) {
       key_down = 1;
       task_set(EV_KEY_DOWN);

@@ -7,20 +7,19 @@
 enum task_events
 {
   EV_INIT                = 0,
+  EV_EX_INT,             // 外部中断
   EV_KEY_SCAN,           // 扫描按键
   EV_ADP_ON,             // adapter pluged on
   EV_ADP_OFF,            // adapter pluged off
-  EV_250MS,              // 大约每250ms转一下
-  EV_1S,                 // 大约每1s转一下 
+  EV_1S,                 // 大约每1s转一下
+  EV_10S,                // 大约每10s转一下 
   EV_KEY_DOWN,           // button按下 
   EV_KEY_PRESS,          // button键短按
   EV_KEY_LPRESS,         // button键长按
   EV_KEY_UP,             // mod抬起
   EV_TIMEO,              // 超时
   EV_LP,                 // bat low
-  EV_FP,                 // bat full
-  EV_SOL_ON,             // 太阳能板充电
-  EV_SOL_OFF,            // 太阳能板没有充电
+  EV_MP,                 // bat can work
   EV_CNT  
 };
 

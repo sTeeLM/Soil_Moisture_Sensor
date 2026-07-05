@@ -5,6 +5,9 @@
 #include "delay.h"
 #include "cext.h"
 
+static uint16_t moisture_saved_data;
+
+static uint16_t moisture_get_data_internal(void);
 void moisture_initialize(void)
 {
   CDBG("moisture init");
@@ -14,7 +17,7 @@ void moisture_initialize(void)
   CL = 0x00;
   CH = 0x00;
 
-  moisture_enable(false);
+  moisture_saved_data = moisture_get_data_internal();
 }
 
 void moisture_enable(bool enable)
@@ -48,7 +51,12 @@ void moisture_enable(bool enable)
 #define MOISTURE_0_ADC_VAL 0x398
 #define MOISTURE_100_ADC_VAL 0x265
 
-float moisture_get_data(void)
+uint16_t moisture_get_data(void)
+{
+  return moisture_saved_data;
+}
+
+static uint16_t moisture_get_data_internal(void)
 {
   int16_t moisture_adc_val;
   int16_t moisture_val;
@@ -68,5 +76,12 @@ float moisture_get_data(void)
   
   if(moisture_val < 0) moisture_val = 0;
   if(moisture_val > 1000) moisture_val = 1000;
-  return (float)moisture_val / 100.0f;
+  return moisture_val;
+}
+
+void moisture_probe(void )
+{
+  uint16_t new_data = moisture_get_data_internal();
+  moisture_saved_data = cext_iir_uint16(moisture_saved_data, new_data, 32);
+  CDBG("moisture_probe %d", moisture_saved_data);
 }

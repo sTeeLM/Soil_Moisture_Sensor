@@ -314,9 +314,9 @@
             <uAregs>0</uAregs>
             <UseInterruptVector>1</UseInterruptVector>
             <Fuzzy>3</Fuzzy>
-            <Optimize>8</Optimize>
+            <Optimize>9</Optimize>
             <WarningLevel>2</WarningLevel>
-            <SizeSpeed>1</SizeSpeed>
+            <SizeSpeed>0</SizeSpeed>
             <ObjectExtend>1</ObjectExtend>
             <ACallAJmp>0</ACallAJmp>
             <InterruptVectorAddress>0</InterruptVectorAddress>
@@ -324,7 +324,7 @@
               <MiscControls></MiscControls>
               <Define>__SOL_DEBUG__</Define>
               <Undefine></Undefine>
-              <IncludePath></IncludePath>
+              <IncludePath>.\state_machine</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -465,6 +465,36 @@
               <FileName>oled.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\oled.c</FilePath>
+            </File>
+            <File>
+              <FileName>tdc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\tdc.c</FilePath>
+            </File>
+            <File>
+              <FileName>oled_font.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\oled_font.c</FilePath>
+            </File>
+            <File>
+              <FileName>oled_ext.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\oled_ext.c</FilePath>
+            </File>
+            <File>
+              <FileName>oled_icon.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\oled_icon.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>state machines</GroupName>
+          <Files>
+            <File>
+              <FileName>sm_main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\state_machine\sm_main.c</FilePath>
             </File>
           </Files>
         </Group>

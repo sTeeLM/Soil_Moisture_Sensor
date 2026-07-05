@@ -38,4 +38,6 @@
 
 int16_t cext_linear_interpolate_short(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x);
 float cext_linear_interpolate_float(float x1, float y1, float x2, float y2, float x);
+uint16_t cext_iir_uint16(uint16_t oldv, uint16_t newv, uint8_t coe);
+float cext_iir_float(float oldv, float newv, uint8_t coe);
 #endif

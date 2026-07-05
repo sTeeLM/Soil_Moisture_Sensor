@@ -41,3 +41,17 @@ float cext_linear_interpolate_float(float x1, float y1, float x2, float y2, floa
     
     return y;
 }
+
+uint16_t cext_iir_uint16(uint16_t oldv, uint16_t newv, uint8_t coe)
+{
+  int32_t ret = oldv;
+  ret += (int32_t)(((int32_t)newv - (int32_t)oldv) / (float)coe);
+  return  (uint16_t) ret;
+}
+
+float cext_iir_float(float oldv, float newv, uint8_t coe)
+{
+  float ret = oldv;
+  ret += (float)((newv - oldv) / coe);
+  return ret;
+}

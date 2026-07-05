@@ -19,4 +19,9 @@ typedef struct _bt_read_frame_param_t
 }bt_read_frame_param_t;
 
 uint8_t bt_read_frame(bt_read_frame_param_t * param);
+
+void bt_report_data(uint16_t power, uint16_t mol);
+bit bt_enabled(void);
+
+
 #endif // __SOL_BT_H__
