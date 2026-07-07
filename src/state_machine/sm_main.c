@@ -24,7 +24,7 @@ static uint8_t lp_draw_cnt;
 
 // 显示湿度、电量、是否插电、是否太阳能充电
 static bool on_off;
-static void oled_draw(void)
+static void oled_draw(bool charging)
 {
   uint16_t mol = moisture_get_data();
   uint16_t power = power_get_vol_percent() / 10;
@@ -47,7 +47,7 @@ static void oled_draw(void)
   if(power == 100) {
     oled_draw_power(80, 16, 48, 16, 100, true);
   } else {
-    oled_draw_power(80, 16, 48, 16, power, on_off);
+    oled_draw_power(80, 16, 48, 16, power, charging ? on_off : true);
     on_off = !on_off;
   }
   
@@ -98,7 +98,7 @@ static void oled_draw_charging(void)
 // 通过蓝牙上报数据
 static void report_data(void)
 {
-  uint16_t power = power_get_vol_percent() / 10;
+  uint16_t power = power_get_vol_percent();
   uint16_t mol = moisture_get_data();
   
   bt_report_data(power, mol);
@@ -139,18 +139,18 @@ static void do_main_adp_off_oled_on(uint8_t to_func, uint8_t to_state, enum task
   if(ev == EV_1S) {
     power_probe();
     moisture_probe();
-    oled_draw();
+    oled_draw(false);
   } else if(ev == EV_KEY_PRESS) {
     oled_enable(true);
     power_probe();
     moisture_probe();
-    oled_draw();
+    oled_draw(false);
     tdc_trigger(TDC_TYPE_15S); //按下按键之后，设置定时器，超时就会关屏幕
   } else if(ev == EV_ADP_OFF) {
     oled_enable(true);
     power_probe();
     moisture_probe();
-    oled_draw();
+    oled_draw(false);
     tdc_trigger(TDC_TYPE_15S); //拔出USB，设置定时器，就会关屏幕
   }
 }
@@ -161,19 +161,19 @@ static void do_main_adp_on(uint8_t to_func, uint8_t to_state, enum task_events e
     oled_enable(true);
     power_probe();
     moisture_probe();
-    oled_draw();
+    oled_draw(true);
     if(ev == EV_1S) {
-      if((report_test_cnt % SM_MAIN_REPORT_TEST_CNT * 15) == 0) {
+      if((report_test_cnt % (SM_MAIN_REPORT_TEST_CNT * 15)) == 0) {
         report_data();  // 开启蓝牙广播
-      } else if((report_test_cnt % SM_MAIN_REPORT_TEST_CNT * 15) == 15) {
-        bt_enable(false); // 15s后关闭广播
+      } else if((report_test_cnt % (SM_MAIN_REPORT_TEST_CNT * 15)) == 15) {
+        //bt_enable(false); // 15s后关闭广播
       }
       report_test_cnt ++;
     }
-  } else if(ev == EV_MP) {
+  } else if(ev == EV_MP || ev == EV_INIT) {
     power_probe();
     moisture_probe();
-    oled_draw();
+    oled_draw(true);
   }
 }
 
@@ -216,7 +216,7 @@ static void do_main_power_off(uint8_t to_func, uint8_t to_state, enum task_event
 }
 
 static const struct sm_trans_slot code  sm_trans_main_init[] = {
-  {EV_INIT, SM_MAIN, SM_MAIN_ADP_OFF_OLED_OFF, do_main_init},
+  {EV_INIT, SM_MAIN, SM_MAIN_ADP_OFF_OLED_ON, do_main_init},
   {NULL, NULL, NULL, NULL}
 };
 

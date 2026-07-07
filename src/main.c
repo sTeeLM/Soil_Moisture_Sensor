@@ -9,6 +9,7 @@
 #include "i2c.h"
 #include "oled.h"
 #include "power.h"
+#include "button.h"
 #include "moisture.h"
 #include "bt.h"
 #include "adc.h"
@@ -25,7 +26,9 @@ void main(void)
   clock_initialize();
   debug_onoff(1);
   
+  
   gpio_initialize();
+  button_initialize();
   i2c_initialize();
   adc_initialize(); // must before power
   oled_initialize();

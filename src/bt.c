@@ -8,6 +8,9 @@
 #include "cext.h"
 #include "delay.h"
 
+#include <string.h>
+#include <stdio.h>
+
 static bit bt_is_enabled;
 
 #define    OLEN  32                             // size of serial transmission buffer
@@ -64,43 +67,117 @@ char c;
 static bool bt_read_res(void)
 {
   bt_read_frame_param_t p;
-  uint8_t buffer[32];
+  uint8_t buffer[32] = {0};
+  uint8_t ret = 0;
+  uint8_t try_cnt = 0;
+  do {
+    delay_ms(100);
+    p.head="OK";
+    p.head_len = 2;
+    p.tail="\r";
+    p.tail_len = 1;
+    p.buffer = buffer;
+    p.buffer_len = sizeof(buffer) - 1;
+    ret = bt_read_frame(&p);
+    try_cnt ++;
+  } while(ret == 0 && try_cnt < 10);
   
-  p.head="OK";
-  p.head_len = 2 ;
-  p.tail="\r\n";
-  p.tail_len = 2;
-  p.buffer = buffer;
-  p.buffer_len = 32;
-  if(bt_read_frame(&p) == 4 && buffer[0] == 'O' && buffer[1] == 'K')
+  if(ret == 3 && buffer[0] == 'O' && buffer[1] == 'K')
     return true;
+  
   return false;
 }
 
+static void bt_clr_buffer(void)
+{
+  istart = 0;                                  // empty transmit buffers
+  iend = 0;
+  ostart = 0;                                  // empty transmit buffers
+  oend = 0;
+  sendactive = 0;                              // transmitter is not active
+  sendfull = 0;                                // clear 'sendfull' flag
+}
 
+
+static char bt_bthome_frame[] = 
+"AT+TEADV="
+//"AT+ADVHEX="
+// 标准 BLE 广播 Flags (3 字节)  
+//"020106"
+// BTHome 长度: LocalName 之前的长度- 核心 Flags占用的3字节 - 长度自身占用的1字节
+//"0916"
+// 类型: Service Data, BTHome UUID 字节 (0xFCD2), Device Info: V2版本，无加密
+//"D2FC"
+"40"
+// 填充电量：Object ID = 0x01 (1字节无符号)
+"01%02bX"
+// 填充湿度：Object ID = 0x03 (2字节无符号, 低字节在前，放大100倍)
+"03%02bX%02bX"
+// Local Name Object ID = 0x09, “SoilMeter”, 总长度=10（字符串9+类型1）
+//"0A09536F696F4D65746572"
+"\r\n";
+
+/*
+static char bt_bthome_frame[] = 
+"AT+TEADV="
+// 标准 BLE 广播 Flags (3 字节)  
+"\0x02\0x01\0x06"
+// BTHome 长度: LocalName 之前的长度- 核心 Flags占用的3字节 - 长度自身占用的1字节
+"\0x09\0x16"
+// 类型: Service Data, BTHome UUID 字节 (0xFCD2), Device Info: V2版本，无加密
+"\0xD2\0xFC\0x40"
+// 填充电量：Object ID = 0x01 (1字节无符号)
+"\0x01\0x00"
+// 填充湿度：Object ID = 0x03 (2字节无符号, 低字节在前，放大100倍)
+"\0x03\0x00\0x00"
+"\r\n";
+*/
+static char bt_bthome_buffer[64];
 void bt_report_data(uint16_t power, uint16_t mol)
 {
-  uint8_t buffer[32];
-  
+  uint8_t len;
   CDBG("bt_report_data %u %u", power, mol);
   
   bt_enable(true);
-  delay_ms(100);
-  
+  delay_ms(1000);
+  bt_clr_buffer(); // remove "+READY"
   do {
     
     // 关闭广播
     bt_send_buffer("AT+ENADV=0\r\n", 12);
     if(!bt_read_res())
       break;
+
+    bt_send_buffer("AT+SERVICE=FCD2\r\n", 17);
+    if(!bt_read_res())
+      break;
+    
+    bt_send_buffer("AT+WRITE=FCD2\r\n", 15);
+    if(!bt_read_res())
+      break;  
+    
+    bt_send_buffer("AT+NOTIFY=FCD2\r\n", 16);
+    if(!bt_read_res())
+      break;  
     
     // 设置广播数据
-    bt_send_buffer("AT+TEADV=HEX\r\n",12);
+    mol *= 10;
+    memset(bt_bthome_buffer, 0, sizeof(bt_bthome_buffer));
+    len = sprintf(bt_bthome_buffer, bt_bthome_frame, (uint8_t)(power/10), (uint8_t)(mol & 0xFF), (uint8_t)((mol >> 8) & 0xFF));
+    /*
+    len = 24;
+    memcpy(bt_bthome_buffer, bt_bthome_frame, len);
+    bt_bthome_buffer[18] = (uint8_t)(power/10);
+    bt_bthome_buffer[20] = (uint8_t)(mol & 0xFF);
+    bt_bthome_buffer[21] = (uint8_t)(uint8_t)((mol >> 8) & 0xFF);
+    */
+    CDBG("bthome: %s", bt_bthome_buffer);
+    bt_send_buffer(bt_bthome_buffer, len);
     if(!bt_read_res())
       break;
     
     // 设置发射功率10dbm
-    bt_send_buffer("AT+POWE=10\r\n",12);
+    bt_send_buffer("AT+POWE=10\r\n", 12);
     if(!bt_read_res())
       break;
     
@@ -108,7 +185,8 @@ void bt_report_data(uint16_t power, uint16_t mol)
     bt_send_buffer("AT+ENADV=1\r\n", 12);
     if(!bt_read_res())
       break;
-        
+
+    
   } while(0);
 }
 
@@ -121,12 +199,7 @@ void bt_enable(bool enable)
 {
   CDBG("bt_enable %bd", enable ? 1 : 0);
   if(enable && !bt_is_enabled) {
-    istart = 0;                                  // empty transmit buffers
-    iend = 0;
-    ostart = 0;                                  // empty transmit buffers
-    oend = 0;
-    sendactive = 0;                              // transmitter is not active
-    sendfull = 0;                                // clear 'sendfull' flag
+    bt_clr_buffer();
 
     /* 波特率 9600 */
     S2CON = 0x50;		//8位数据,可变波特率
@@ -258,7 +331,8 @@ uint8_t bt_read_frame(bt_read_frame_param_t * p)
           tail_match_cnt++;
           if (tail_match_cnt == p->tail_len) {
             // 成功匹配完整帧尾，返回包含 head 和 tail 的总长度
-            CDBG("bt_read_frame: get frame %bd bytes", write_idx);
+            p->buffer[write_idx] = 0;
+            CDBG("bt_read_frame: get frame %bd: %s", write_idx, p->buffer);
             return write_idx; 
           }
         } else {

@@ -23,11 +23,13 @@ static bit power_int_flag;
 static void power_isr_stdby (void) interrupt 10 using 2
 {
   task_set(EV_EX_INT);
+  task_set(EV_KEY_PRESS);
 }
 
 static void power_isr_chrg (void) interrupt 11 using 2
 {
   task_set(EV_EX_INT);
+  task_set(EV_KEY_PRESS);
 }
 
 static uint16_t power_get_vol_internal(void);
@@ -57,12 +59,12 @@ bool power_sleep(void)
 {
   task_clr(EV_EX_INT);
   power_enable_lvo(0);
-  CDBG("enter power_sleep\n");
+  CDBG("enter power_sleep");
   power_int_flag = 1;
   PCON |= 0x2; // into PD
-  CDBG("leave power_sleep\n");
+  CDBG("leave power_sleep");
   if(task_test(EV_EX_INT)) {
-    CDBG("clear power_int_flag\n");
+    CDBG("clear power_int_flag");
     power_int_flag = 0; // 按键和插电都会清除这个flag
   }  
   power_enable_lvo(1);
@@ -75,6 +77,7 @@ bool power_adapter_on(void)
     return false;
   
   return true;
+
 }
 
 static bool power_adapter_prev_on(void)
@@ -143,7 +146,7 @@ uint16_t power_get_vol_percent(void)
     ret = 1000;
   if(ret < 0)
     ret = 0;
-  return (uint8_t)ret;
+  return (uint16_t)ret;
 }
 
 void power_proc(enum task_events ev)
@@ -172,9 +175,11 @@ void power_probe(void)
   power_saved_stdby = GPIO_POWER_STDBY;
   
   power_vol_temp = power_get_vol_internal();
+
   if(power_vol_temp > POWER_FP_THRESHOLD)
     power_vol_temp = POWER_FP_THRESHOLD;
   power_vol = cext_iir_uint16(power_vol, power_vol_temp, 32);
+
   if(power_vol <= POWER_LP_THRESHOLD && power_saved_vol > POWER_LP_THRESHOLD) {
     task_set(EV_LP);
   } else if(power_vol >= POWER_MP_THRESHOLD && power_saved_vol < POWER_MP_THRESHOLD) {

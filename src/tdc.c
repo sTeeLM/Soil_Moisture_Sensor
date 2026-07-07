@@ -54,11 +54,11 @@ void tdc_trigger_sleep(tdc_type_t type)
       return;
     break;
     default:
-      CDBG("tdc_trigger unknown type %bu\n",type); 
+      CDBG("tdc_trigger unknown type %bu",type); 
       return;
   }
   if(!power_sleep()) { // 如果不是按键和插电唤醒，设置EV_TIMEO
-    CDBG("tdc_trigger_sleep: wake up and send EV_TIMEO\n");
+    CDBG("tdc_trigger_sleep: wake up and send EV_TIMEO");
     task_set(EV_TIMEO);
   }
 }
