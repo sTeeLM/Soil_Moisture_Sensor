@@ -2,51 +2,58 @@
 #define SOL_GPIO_WRAPPER_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
-void gpio_wrapper_init(void);
-
-// IV18相关GPIO定义
-#define IV18_DIN_GPIO_PIN    38
-#define IV18_LOAD_GPIO_PIN   39
-#define IV18_CLK_GPIO_PIN    40
-#define IV18_BLANK_GPIO_PIN  41
-#define IV18_EN_GPIO_PIN     42
-
-
-// I2C相关GPIO定义
-#define I2C_SCL_GPIO_PIN     6
-#define I2C_SDA_GPIO_PIN     7
-
-// DS3231的时钟信号GPIO定义
-#define DS3231_CLK_GPIO_PIN    15
-#define DS3231_INT_GPIO_PIN    5
-
-// EC11相关GPIO定义
-#define EC11_A_GPIO_PIN       13
-#define EC11_B_GPIO_PIN       12
-#define EC11_C_GPIO_PIN       14
-
-// Beeper 相关GPIO定义
-#define BEEPER_GPIO_PIN       16
-
-// 运动传感器开关相关GPIO定义
-#define MOTION_SW_GPIO_PIN    17
-
-// DPF Player相关GPIO定义
-#define DPF_PLAYER_BSY_GPIO_PIN 18
-#define DPF_PLAYER_RX_GPIO_PIN  19
-#define DPF_PLAYER_TX_GPIO_PIN  20
-
-// PM5003ST相关GPIO定义
-#define PMS5003ST_SET_GPIO_PIN    10
-#define PMS5003ST_RESET_GPIO_PIN  11
-#define PMS5003ST_TX_GPIO_PIN    8 
-#define PMS5003ST_RX_GPIO_PIN    9
-
-// LED灯相关GPIO定义
-#define LED_STRIP_GPIO_PIN      48
-
+void gpio_wrapper_init(bool keep_power_en);
 // GPIO操作接口 
 void gpio_wrapper_set_level(uint32_t gpio_num, uint8_t level);
 uint8_t gpio_wrapper_get_level(uint32_t gpio_num);
+
+// 所有的GPIO定义
+// 内部 Flash 绑定引脚:
+// GPIO11, GPIO12, GPIO13, GPIO14, GPIO15, GPIO16, GPIO17
+
+// USB 绑定引脚:
+// GPIO18 (USB_D-), GPIO19 (USB_D+)
+
+// 默认串口引脚（有条件可用）
+// GPIO20 (RX0), GPIO21 (TX0)
+
+// 启动引脚
+// GPIO2, GPIO8 (RESET), GPIO9 (BOOT)
+
+//// 可用 GPIO:
+// RTC GPIO: 
+// GPIO0, GPIO1, GPIO2(小心！), GPIO3, GPIO4, GPIO5
+// 通用GPIO:
+// GPIO6, GPIO7, GPIO10, GPIO18, GPIO19
+
+//// Power相关GPIO定义
+// 测量电池电压的输入
+#define GPIO_PIN_POWER_BATTERY_ADC 0
+// 测量电池电压使能
+#define GPIO_PIN_POWER_BATTERY_EN 6
+// 使能总电源，必须是RTC GPIO
+#define GPIO_PIN_POWER_EN 5
+// 探测USB是否连接，必须是RTC GPIO
+#define GPIO_PIN_POWER_ADP_ON 4
+// 检查STDBY状态
+#define GPIO_PIN_POWER_STDBY 7
+
+// I2C相关GPIO定义
+#define GPIO_PIN_I2C_SCL 18
+#define GPIO_PIN_I2C_SDA 19
+
+// OLED电源
+#define GPIO_PIN_OLED_EN 10
+
+// 按钮，必须是RTC GPIO
+#define GPIO_PIN_KEY 3
+
+// 电容测量（湿度）
+// PWM输出
+#define GPIO_PIN_HUMIDITY_PWM 2
+// ADC输入
+#define GPIO_PIN_HUMIDITY_ADC 1
+
 #endif //SOL_GPIO_WRAPPER_H

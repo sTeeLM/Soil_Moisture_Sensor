@@ -19,8 +19,8 @@ void i2c_wrapper_init(void)
   i2c_master_bus_config_t i2c_mst_config = {
       .clk_source = I2C_CLK_SRC_DEFAULT,
       .i2c_port   = I2C_NUM_0,
-      .scl_io_num = I2C_SCL_GPIO_PIN,
-      .sda_io_num = I2C_SDA_GPIO_PIN,
+      .scl_io_num = GPIO_PIN_I2C_SCL,
+      .sda_io_num = GPIO_PIN_I2C_SDA,
       .glitch_ignore_cnt = 7,
       .flags.enable_internal_pullup = true
   };  
