@@ -15,6 +15,8 @@ void i2c_wrapper_add_dev(
     uint32_t clk_speed_hz,
     i2c_wrapper_dev_handle_t * dev_handle);
 
+void i2c_wrapper_del_dev(i2c_wrapper_dev_handle_t * dev_handle);
+
 typedef enum _i2c_wrapper_addr_mode_t
 {
   I2C_ADDR_MODE_8BIT = 0,
@@ -46,5 +48,6 @@ bool i2c_wrapper_raw_write(
   size_t data_len);
 
 void i2c_wrapper_bus_reset(void);
+void i2c_wrapper_bus_enable(bool enable);
 
 #endif // SOL_I2C_WRAPPER_H

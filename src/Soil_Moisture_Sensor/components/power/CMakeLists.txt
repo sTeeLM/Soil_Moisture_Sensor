@@ -3,4 +3,7 @@ idf_component_register(SRCS "power.c"
                     REQUIRES "gpio_wrapper"
                     REQUIRES "logger"
                     REQUIRES "sm"
-                    REQUIRES "task")
+                    REQUIRES "task"
+                    REQUIRES "esp_adc"
+                    REQUIRES "cext"
+                    REQUIRES "delay")

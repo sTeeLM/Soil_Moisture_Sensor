@@ -1,6 +1,8 @@
 #include "oled.h"
 #include "logger.h"
 #include "i2c_wrapper.h"
+#include "gpio_wrapper.h"
+#include "delay.h"
 #include <string.h>
 
 // SSD1306 OLED显示屏的驱动
@@ -11,20 +13,20 @@ static const char * TAG = "OLED";
 #define OLED_I2C_ADDR 0x3C
 
 static uint8_t oled_buffer[OLED_PAGES][OLED_WIDTH]; // 128 * 64 /8, 显存镜像，对应8个Page，每一个Page 128条扫描线
-
+static bool oled_enabled;
 static i2c_wrapper_dev_handle_t oled_dev_handle;
 
 static void oled_send_command(uint8_t cmd)
 {
     // Assume i2c_write(OLED_I2C_ADDR, 0x00, &cmd, 1);
-    // NEO_LOGD(TAG, "[CMD] %02X", cmd);
+    //SOL_LOGD(TAG, "[CMD] %02X", cmd);
     i2c_wrapper_write(&oled_dev_handle, 0x00, I2C_ADDR_MODE_8BIT, &cmd, 1);
 }
 
 static void oled_send_data(uint8_t data) 
 {
-    // NEO_LOGD(TAG, "[DAT] %02X", data);
     // Assume i2c_write(OLED_I2C_ADDR, 0x40, &data, 1);
+    //SOL_LOGD(TAG, "[DAT] %02X", data);
     i2c_wrapper_write(&oled_dev_handle, 0x40, I2C_ADDR_MODE_8BIT, &data, 1);
 }
 
@@ -293,31 +295,51 @@ void oled_set_charge_pump(bool enable)
 
 /////////////////////////
 
+static void oled_reset(void)
+{
+  SOL_LOGI(TAG, "oled reset");
+ 
+  oled_display_onoff(false);
+  oled_set_addressing_mode(OLED_ADDRESSING_MODE_PAGE);
+  oled_set_column_address_for_page_addressing(0x0);
+  oled_set_display_start_line(0x0);
+  oled_set_page_address_for_page_addressing(0x0);
+  oled_set_contrast(0xFF);
+  oled_set_segment_remap(true);
+  oled_set_inverse(false);
+  oled_set_multiplex_ratio(0x1F);
+  oled_set_com_scan_direction(true);
+  oled_set_display_offset(0);
+  oled_set_display_clock(0, 16);
+  oled_set_precharge_period(2, 2);
+  oled_set_com_pin_hardware_configuration(false, false);
+  oled_set_vcomh_deselect_level(OLED_VCOMH_DESELECT_LEVEL_083);
+  oled_set_charge_pump(true);
+  oled_display_onoff(true);
+ 
+  oled_clear();
+  oled_redraw_buffer();
+}
+
+void oled_enable(bool enable)
+{
+  if(enable && !oled_enabled) {
+    i2c_wrapper_bus_enable(true);
+    i2c_wrapper_add_dev(OLED_I2C_ADDR, 400000, &oled_dev_handle);
+    oled_reset();
+    oled_enabled = true;
+  } else if(!enable && oled_enabled){
+    oled_display_onoff(false);
+    i2c_wrapper_del_dev(&oled_dev_handle);
+    i2c_wrapper_bus_enable(false);
+    oled_enabled = false;
+  }
+}
+
 void oled_init(void)
 {
     SOL_LOGI(TAG, "init");
-
-    // register i2c device
-    i2c_wrapper_add_dev(OLED_I2C_ADDR, 400000, &oled_dev_handle);
-    oled_display_onoff(false);
-    oled_set_addressing_mode(OLED_ADDRESSING_MODE_PAGE);
-    oled_set_column_address_for_page_addressing(0x0);
-    oled_set_display_start_line(0x0);
-    oled_set_page_address_for_page_addressing(0x0);
-    oled_set_contrast(0xFF);
-    oled_set_segment_remap(true);
-    oled_set_inverse(false);
-    oled_set_multiplex_ratio(0x3F);
-    oled_set_com_scan_direction(true);
-    oled_set_display_offset(0);
-    oled_set_display_clock(0, 8);
-    oled_set_precharge_period(1, 0xF);
-    oled_set_com_pin_hardware_configuration(true, false);
-    oled_set_vcomh_deselect_level(OLED_VCOMH_DESELECT_LEVEL_083);
-    oled_set_charge_pump(true);
-    oled_display_onoff(true);
-    oled_clear();
-    oled_redraw_buffer();
+    oled_enabled = false;
 }
 
 //////// 绘图API

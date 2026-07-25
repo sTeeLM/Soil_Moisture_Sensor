@@ -1,11 +1,17 @@
 #include "gpio_wrapper.h"
-#include "hal/gpio_types.h"
 #include "logger.h"
+#include "hal/gpio_types.h"
 #include "driver/gpio.h"
 
 static const char * TAG = "GPIO";
 
-void gpio_wrapper_init(bool keep_power_en)
+static bool gpio_recover_from_standby(void)
+{
+  // Implementation for recovering from standby
+  return false;
+}
+
+void gpio_wrapper_init(void)
 {
   gpio_config_t io_power_conf = {};
   gpio_config_t io_i2c_conf = {};
@@ -27,7 +33,8 @@ void gpio_wrapper_init(bool keep_power_en)
   io_power_conf.pin_bit_mask = 
     (1ULL << GPIO_PIN_POWER_BATTERY_ADC)  | 
     (1ULL << GPIO_PIN_POWER_ADP_ON) |
-    (1ULL << GPIO_PIN_POWER_STDBY);
+    (1ULL << GPIO_PIN_POWER_STDBY) |
+    (1ULL << GPIO_PIN_POWER_SOL);
   //disable pull-down mode
   io_power_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
   //disable pull-up mode
@@ -45,7 +52,7 @@ void gpio_wrapper_init(bool keep_power_en)
   io_power_conf.pull_up_en = GPIO_PULLUP_DISABLE;
   ESP_ERROR_CHECK(gpio_config(&io_power_conf));
 
-  if(!keep_power_en) {
+  if(!gpio_recover_from_standby()) {
     gpio_wrapper_set_level(GPIO_PIN_POWER_EN, 0);
     io_power_conf.intr_type = GPIO_INTR_DISABLE;
     io_power_conf.mode = GPIO_MODE_OUTPUT;
@@ -57,7 +64,7 @@ void gpio_wrapper_init(bool keep_power_en)
 
   //// 设置i2c相关GPIO
   io_i2c_conf.intr_type = GPIO_INTR_DISABLE;
-  io_i2c_conf.mode = GPIO_MODE_INPUT_OUTPUT_OD;
+  io_i2c_conf.mode = GPIO_MODE_DISABLE;
   io_i2c_conf.pin_bit_mask = 
     (1ULL << GPIO_PIN_I2C_SCL) |
     (1ULL << GPIO_PIN_I2C_SDA);
@@ -97,7 +104,6 @@ void gpio_wrapper_init(bool keep_power_en)
   io_humidity_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
   io_humidity_conf.pull_up_en = GPIO_PULLDOWN_DISABLE;
   ESP_ERROR_CHECK(gpio_config(&io_humidity_conf));  
-
 
   gpio_install_isr_service(ESP_INTR_FLAG_LEVEL1);
 

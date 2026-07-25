@@ -5,6 +5,8 @@
 #include "gpio_wrapper.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "hal/gpio_types.h"
+#include "driver/gpio.h"
 #include "endian.h"
 #include "delay.h"
 
@@ -16,18 +18,8 @@ static i2c_master_bus_handle_t i2c_bus_handle;
 
 void i2c_wrapper_init(void)
 {
-  i2c_master_bus_config_t i2c_mst_config = {
-      .clk_source = I2C_CLK_SRC_DEFAULT,
-      .i2c_port   = I2C_NUM_0,
-      .scl_io_num = GPIO_PIN_I2C_SCL,
-      .sda_io_num = GPIO_PIN_I2C_SDA,
-      .glitch_ignore_cnt = 7,
-      .flags.enable_internal_pullup = true
-  };  
-  
   SOL_LOGI(TAG, "init");
-
-  ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &i2c_bus_handle));
+  i2c_bus_handle = NULL;
 }
 
 void i2c_wrapper_add_dev(uint16_t addr, uint32_t clk_speed_hz, i2c_wrapper_dev_handle_t * dev_handle)
@@ -39,6 +31,11 @@ void i2c_wrapper_add_dev(uint16_t addr, uint32_t clk_speed_hz, i2c_wrapper_dev_h
   };
   ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus_handle, &dev_config, &(dev_handle->real_handle)));
 } 
+
+void i2c_wrapper_del_dev(i2c_wrapper_dev_handle_t * dev_handle)
+{
+  ESP_ERROR_CHECK(i2c_master_bus_rm_device(dev_handle->real_handle));
+}
 
 void i2c_wrapper_write(
   i2c_wrapper_dev_handle_t * dev_handle, 
@@ -122,4 +119,51 @@ void i2c_wrapper_bus_reset(void)
 {
   SOL_LOGW(TAG, "i2c_wrapper_bus_reset!");
   i2c_master_bus_reset(i2c_bus_handle);
+}
+
+void i2c_wrapper_bus_enable(bool enable)
+{
+  gpio_config_t io_i2c_conf = {};
+  i2c_master_bus_config_t i2c_mst_config = {
+      .clk_source = I2C_CLK_SRC_DEFAULT,
+      .i2c_port   = I2C_NUM_0,
+      .scl_io_num = GPIO_PIN_I2C_SCL,
+      .sda_io_num = GPIO_PIN_I2C_SDA,
+      .glitch_ignore_cnt = 7,
+      .flags.enable_internal_pullup = true
+  };  
+
+  SOL_LOGD(TAG, "i2c_wrapper_bus_enable(%d)", enable);
+  if(enable) {
+    gpio_wrapper_set_level(GPIO_PIN_OLED_EN, 1);
+    delay_ms(10); // 等待电源稳定
+    //// 设置i2c相关GPIO
+    io_i2c_conf.intr_type = GPIO_INTR_DISABLE;
+    io_i2c_conf.mode = GPIO_MODE_INPUT_OUTPUT_OD;
+    io_i2c_conf.pin_bit_mask = 
+      (1ULL << GPIO_PIN_I2C_SCL) |
+      (1ULL << GPIO_PIN_I2C_SDA);
+    io_i2c_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_i2c_conf.pull_up_en = GPIO_PULLDOWN_DISABLE;
+    ESP_ERROR_CHECK(gpio_config(&io_i2c_conf));
+    delay_ms(10); // 等待I2C稳定
+    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &i2c_bus_handle));
+    i2c_wrapper_bus_reset();
+  } else {
+    // 关闭I2C总线
+    if(i2c_bus_handle) {
+      ESP_ERROR_CHECK(i2c_del_master_bus(i2c_bus_handle));
+      i2c_bus_handle = NULL;
+    }
+    // 设置i2c相关GPIO为DISABLE模式，避免漏电
+    io_i2c_conf.intr_type = GPIO_INTR_DISABLE;
+    io_i2c_conf.mode = GPIO_MODE_DISABLE;
+    io_i2c_conf.pin_bit_mask = 
+      (1ULL << GPIO_PIN_I2C_SCL) |
+      (1ULL << GPIO_PIN_I2C_SDA);
+    io_i2c_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_i2c_conf.pull_up_en = GPIO_PULLDOWN_DISABLE;
+    ESP_ERROR_CHECK(gpio_config(&io_i2c_conf));
+    gpio_wrapper_set_level(GPIO_PIN_OLED_EN, 0);
+  }
 }

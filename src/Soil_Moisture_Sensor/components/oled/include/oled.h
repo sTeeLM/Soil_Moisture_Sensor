@@ -5,10 +5,11 @@
 #include <stdbool.h>
 
 #define OLED_WIDTH  128
-#define OLED_HEIGHT 64
+#define OLED_HEIGHT 32
 #define OLED_PAGES  8
 
 void oled_init(void);
+void oled_enable(bool enable);
 
 //////// 底层命令封装
 

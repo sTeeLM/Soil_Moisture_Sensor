@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-void gpio_wrapper_init(bool keep_power_en);
+void gpio_wrapper_init(void);
 // GPIO操作接口 
 void gpio_wrapper_set_level(uint32_t gpio_num, uint8_t level);
 uint8_t gpio_wrapper_get_level(uint32_t gpio_num);
@@ -20,7 +20,7 @@ uint8_t gpio_wrapper_get_level(uint32_t gpio_num);
 // GPIO20 (RX0), GPIO21 (TX0)
 
 // 启动引脚
-// GPIO2, GPIO8 (RESET), GPIO9 (BOOT)
+// GPIO2, GPIO8, GPIO9 (BOOT)
 
 //// 可用 GPIO:
 // RTC GPIO: 
@@ -39,6 +39,8 @@ uint8_t gpio_wrapper_get_level(uint32_t gpio_num);
 #define GPIO_PIN_POWER_ADP_ON 4
 // 检查STDBY状态
 #define GPIO_PIN_POWER_STDBY 7
+// 检查SOL状态
+#define GPIO_PIN_POWER_SOL 8
 
 // I2C相关GPIO定义
 #define GPIO_PIN_I2C_SCL 18
