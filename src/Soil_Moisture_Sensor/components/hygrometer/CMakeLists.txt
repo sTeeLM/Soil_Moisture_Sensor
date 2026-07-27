@@ -1,9 +1,9 @@
-idf_component_register(SRCS "power.c"
+idf_component_register(SRCS "hygrometer.c"
                     INCLUDE_DIRS "include"
-                    REQUIRES "gpio_wrapper"
                     REQUIRES "logger"
-                    REQUIRES "sm"
                     REQUIRES "task"
+                    REQUIRES "gpio_wrapper"
+                    REQUIRES "adc_wrapper"
                     REQUIRES "cext"
                     REQUIRES "delay"
-                    REQUIRES "adc_wrapper")
+                    REQUIRES "esp_driver_ledc")

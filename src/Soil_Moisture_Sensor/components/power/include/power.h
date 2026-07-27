@@ -11,5 +11,17 @@ bool power_is_adapter_connected(void);
 bool power_is_adapter_standby(void);
 bool power_is_sol_on(void);
 void power_dump(void);
+bool power_recover_from_standby(void);
+void power_enter_standby(uint32_t sec);
+typedef enum _power_wakeup_reason_t
+{
+  POWER_WAKEUP_NONE = 0,
+  POWER_WAKEUP_KEY,
+  POWER_WAKEUP_ADP,
+  POWER_WAKEUP_TIMEO
+} power_wakeup_reason_t;
+
+void power_check_wakeup_reason(void);
+power_wakeup_reason_t power_get_wakeup_reason(void);
 
 #endif // SOL_POWER_H

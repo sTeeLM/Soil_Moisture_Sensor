@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "task.h"
 
+#include "sm_main.h"
 
 static const char * TAG = "SM";
 
@@ -18,11 +19,11 @@ static const char * sm_functions_names[] = {
 };
 
 static const char ** sm_states_names[] = {
-  NULL
+  sm_states_names_main
 };
 
 static const sm_trans_t ** sm_trans_table[] = {
-  NULL
+  sm_trans_main
 };
 
 static uint8_t sm_cur_fuction;

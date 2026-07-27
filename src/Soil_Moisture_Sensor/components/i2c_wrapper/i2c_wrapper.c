@@ -135,7 +135,7 @@ void i2c_wrapper_bus_enable(bool enable)
 
   SOL_LOGD(TAG, "i2c_wrapper_bus_enable(%d)", enable);
   if(enable) {
-    gpio_wrapper_set_level(GPIO_PIN_OLED_EN, 1);
+    gpio_wrapper_set_level(GPIO_PIN_I2C_EN, 0);
     delay_ms(10); // 等待电源稳定
     //// 设置i2c相关GPIO
     io_i2c_conf.intr_type = GPIO_INTR_DISABLE;
@@ -164,6 +164,6 @@ void i2c_wrapper_bus_enable(bool enable)
     io_i2c_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     io_i2c_conf.pull_up_en = GPIO_PULLDOWN_DISABLE;
     ESP_ERROR_CHECK(gpio_config(&io_i2c_conf));
-    gpio_wrapper_set_level(GPIO_PIN_OLED_EN, 0);
+    gpio_wrapper_set_level(GPIO_PIN_I2C_EN, 1);
   }
 }

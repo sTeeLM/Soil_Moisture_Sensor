@@ -40,14 +40,14 @@ uint8_t gpio_wrapper_get_level(uint32_t gpio_num);
 // 检查STDBY状态
 #define GPIO_PIN_POWER_STDBY 7
 // 检查SOL状态
-#define GPIO_PIN_POWER_SOL 8
+#define GPIO_PIN_POWER_SOL 10
 
 // I2C相关GPIO定义
 #define GPIO_PIN_I2C_SCL 18
 #define GPIO_PIN_I2C_SDA 19
 
-// OLED电源
-#define GPIO_PIN_OLED_EN 10
+// I2C电源，低电平为使能
+#define GPIO_PIN_I2C_EN 8
 
 // 按钮，必须是RTC GPIO
 #define GPIO_PIN_KEY 3

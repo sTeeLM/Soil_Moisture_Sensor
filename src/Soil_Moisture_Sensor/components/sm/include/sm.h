@@ -6,9 +6,6 @@
 
 #include "task.h"
 
-#define SM_APP_CORE_ID (0)
-#define SM_AUX_CORE_ID (1) 
-
 typedef enum _sm_functions_t 
 {
   SM_MAIN,                 // 主功能：时间日期展示，传感器数据展示  

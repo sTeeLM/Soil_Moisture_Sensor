@@ -1,21 +1,15 @@
 #include "gpio_wrapper.h"
 #include "logger.h"
+#include "power.h"
 #include "hal/gpio_types.h"
 #include "driver/gpio.h"
 
 static const char * TAG = "GPIO";
 
-static bool gpio_recover_from_standby(void)
-{
-  // Implementation for recovering from standby
-  return false;
-}
-
 void gpio_wrapper_init(void)
 {
   gpio_config_t io_power_conf = {};
   gpio_config_t io_i2c_conf = {};
-  gpio_config_t io_oled_conf = {};
   gpio_config_t io_key_conf = {};  
   gpio_config_t io_humidity_conf = {}; 
 
@@ -52,15 +46,20 @@ void gpio_wrapper_init(void)
   io_power_conf.pull_up_en = GPIO_PULLUP_DISABLE;
   ESP_ERROR_CHECK(gpio_config(&io_power_conf));
 
-  if(!gpio_recover_from_standby()) {
-    gpio_wrapper_set_level(GPIO_PIN_POWER_EN, 0);
-    io_power_conf.intr_type = GPIO_INTR_DISABLE;
-    io_power_conf.mode = GPIO_MODE_OUTPUT;
-    io_power_conf.pin_bit_mask = (1ULL << GPIO_PIN_POWER_EN);
-    io_power_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    io_power_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-    ESP_ERROR_CHECK(gpio_config(&io_power_conf));
-  }
+
+  gpio_wrapper_set_level(GPIO_PIN_POWER_EN, 0);
+  io_power_conf.intr_type = GPIO_INTR_DISABLE;
+  io_power_conf.mode = GPIO_MODE_OUTPUT;
+  io_power_conf.pin_bit_mask = (1ULL << GPIO_PIN_POWER_EN);
+  io_power_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  io_power_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+  ESP_ERROR_CHECK(gpio_config(&io_power_conf));
+  
+  // 如果是从睡眠中醒过来
+  if(power_recover_from_standby()) {
+    gpio_wrapper_set_level(GPIO_PIN_POWER_EN, 1);
+    gpio_hold_dis(GPIO_PIN_POWER_EN); 
+  }  
 
   //// 设置i2c相关GPIO
   io_i2c_conf.intr_type = GPIO_INTR_DISABLE;
@@ -72,14 +71,14 @@ void gpio_wrapper_init(void)
   io_i2c_conf.pull_up_en = GPIO_PULLDOWN_DISABLE;
   ESP_ERROR_CHECK(gpio_config(&io_i2c_conf));
  
-  //// OLED电源
-  gpio_wrapper_set_level(GPIO_PIN_OLED_EN, 0);
-  io_oled_conf.intr_type = GPIO_INTR_DISABLE;
-  io_oled_conf.mode = GPIO_MODE_OUTPUT;
-  io_oled_conf.pin_bit_mask = (1ULL << GPIO_PIN_OLED_EN);
-  io_oled_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-  io_oled_conf.pull_up_en = GPIO_PULLDOWN_DISABLE;
-  ESP_ERROR_CHECK(gpio_config(&io_oled_conf));
+  //// I2C电源
+  gpio_wrapper_set_level(GPIO_PIN_I2C_EN, 1);
+  io_i2c_conf.intr_type = GPIO_INTR_DISABLE;
+  io_i2c_conf.mode = GPIO_MODE_OUTPUT_OD;
+  io_i2c_conf.pin_bit_mask = (1ULL << GPIO_PIN_I2C_EN);
+  io_i2c_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  io_i2c_conf.pull_up_en = GPIO_PULLDOWN_DISABLE;
+  ESP_ERROR_CHECK(gpio_config(&io_i2c_conf));
   
   ////Key
   io_key_conf.intr_type = GPIO_INTR_DISABLE;

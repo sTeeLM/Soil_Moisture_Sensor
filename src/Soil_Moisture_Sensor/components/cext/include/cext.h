@@ -19,7 +19,7 @@ float cext_linear_interpolate_float(float x1, float y1, float x2, float y2, floa
 /* 无符号时钟代数循环减 N 宏 */
 #define cext_ring_sub(v, n, minv, maxv) (minv + ((v - minv + ((maxv - minv + 1) - (n % (maxv - minv + 1)))) % (maxv - minv + 1)))
 
-/* 无符号整数上下线 */
+/* 整数上下限 */
 #define cext_limit(v, minv, maxv) (v < minv ? minv : (v > maxv ? maxv : v))
 
 

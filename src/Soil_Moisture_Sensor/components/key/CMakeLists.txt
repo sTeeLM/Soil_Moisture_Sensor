@@ -3,4 +3,5 @@ idf_component_register(SRCS "key.c"
                     REQUIRES "logger"
                     REQUIRES "task"
                     REQUIRES "gpio_wrapper"
+                    REQUIRES "clock"
                     REQUIRES "sm")

@@ -27,6 +27,11 @@ static bool IRAM_ATTR clock_cb(gptimer_handle_t timer, const gptimer_alarm_event
       }
     }
 
+    // 每秒扫描20次按键
+    if(clock_ticks % 5 == 0) {
+      task_set(EV_KEY_SCAN);
+    }
+
     return false;
 }
 
@@ -66,4 +71,14 @@ void clock_init(void)
 void clock_time_proc(task_event_t ev)
 {
   sm_run(ev);
+}
+
+uint32_t clock_get_now_sec(void)
+{
+  return clock_ticks / 100;
+}
+uint32_t clock_diff_now_sec(uint32_t start_sec)
+{
+  uint32_t now_sec = clock_get_now_sec();
+  return (uint32_t)(now_sec - start_sec);
 }
