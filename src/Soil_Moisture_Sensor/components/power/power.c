@@ -15,6 +15,12 @@ static const char * TAG = "POWER";
 static uint16_t power_sensor_data;
 static power_wakeup_reason_t power_wakeup_reason;
 
+#define POWER_VOLTAGE_FIX_OFFSITE (0.26f) // 电压偏移量，单位V
+#define POWER_FP_THRES 4200
+#define POWER_MP_THRES 4000
+#define POWER_LP_THRES 3700
+static power_state_t power_state;
+
 static bool RTC_DATA_ATTR power_recover;
 
 static void IRAM_ATTR power_isr_handler_adp_on (void* param)
@@ -29,6 +35,8 @@ static void IRAM_ATTR power_isr_handler_adp_on (void* param)
 }
 
 static uint16_t power_get_battery_voltage_mv_internal(void);
+
+// 注意：不要初始化power_state和power_recover
 void power_init(void)
 {
 
@@ -41,9 +49,7 @@ void power_init(void)
 
   power_sensor_data = power_get_battery_voltage_mv_internal();
 
-  power_recover = false;
-
-  power_wakeup_reason = POWER_WAKEUP_NONE;
+  power_state = POWER_STATE_MP;
 }
 
 void power_proc(task_event_t ev)
@@ -81,7 +87,7 @@ static uint16_t power_get_battery_voltage_mv_internal(void)
   gpio_wrapper_set_level(GPIO_PIN_POWER_BATTERY_EN, 0);
   // 根据实际的分压电路计算电池电压
   // 假设分压比为2:1，ADC参考电压为3.3V，ADC分辨率为12位
-  voltage = (adc_value / 4095.0) * 3.3 * 2; // 分压比为2:1
+  voltage = (adc_value / 4095.0) * 3.3 * 2 - POWER_VOLTAGE_FIX_OFFSITE; // 分压比为2:1
   return (uint16_t)(voltage * 1000); // 转换为毫伏
 }
 
@@ -91,6 +97,19 @@ uint16_t power_get_battery_voltage_mv(void)
   // 使用IIR滤波器平滑电压值
   power_sensor_data = cext_iir_uint16(power_sensor_data, new_val, 4); // 4为滤波系数，可根据需要调整
   return power_sensor_data;
+}
+
+uint16_t power_get_battery_voltage_percent(void)
+{
+  uint16_t voltage = power_get_battery_voltage_mv();
+  if(voltage >= POWER_FP_THRES) {
+    return 1000; // 100%
+  } else if (voltage <= POWER_LP_THRES) {
+    return 0; // 0%
+  } else {
+    // 线性映射电压到百分比
+    return (uint16_t)(cext_linear_interpolate(POWER_LP_THRES, 0, POWER_FP_THRES, 1000, voltage));
+  }
 }
 
 void power_dump(void)
@@ -143,14 +162,15 @@ void power_check_wakeup_reason(void)
 
 void power_enter_standby(uint32_t sec)
 {
+  SOL_LOGI(TAG, "power_enter_standby %u sec", sec);
   power_recover = true;
   // 配置定时器唤醒(单位是：微秒)
   ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(sec * 1000000));
 
   // 配置 GPIO 外部中断唤醒（只能使用 RTC 引脚：GPIO 0~5）
   // 按下按键或者插上USB都会唤醒
-  //ESP_ERROR_CHECK(esp_deep_sleep_enable_gpio_wakeup((1ULL << GPIO_PIN_KEY) |(1ULL << GPIO_PIN_POWER_ADP_ON) 
-  ESP_ERROR_CHECK(esp_deep_sleep_enable_gpio_wakeup((1ULL << GPIO_PIN_KEY)
+  ESP_ERROR_CHECK(esp_deep_sleep_enable_gpio_wakeup((1ULL << GPIO_PIN_KEY) | (1ULL << GPIO_PIN_POWER_ADP_ON) 
+  //ESP_ERROR_CHECK(esp_deep_sleep_enable_gpio_wakeup((1ULL << GPIO_PIN_KEY)
   , ESP_GPIO_WAKEUP_GPIO_HIGH));
 
   // 休眠期间，电源必须有电
@@ -159,8 +179,23 @@ void power_enter_standby(uint32_t sec)
   esp_deep_sleep_start();
 }
 
-bool power_recover_from_standby(void)
+bool power_is_recover_from_standby(void)
 {
   SOL_LOGI(TAG, "power_recover_from_standby: %d", power_recover);
   return power_recover;
+}
+
+void power_probe(void)
+{
+  uint16_t power_vol = power_get_battery_voltage_mv();
+  SOL_LOGD(TAG, "power_probe: voltage %dmV", power_vol);
+  if((power_vol > POWER_MP_THRES) && (power_state == POWER_STATE_LP)) {
+    SOL_LOGI(TAG, "power_probe: recover from low power %dmV", power_vol);
+    task_set(EV_MP);
+    power_state = POWER_STATE_MP;
+  } else if ((power_vol < POWER_LP_THRES) && (power_state == POWER_STATE_MP)) {
+    SOL_LOGW(TAG, "power_probe: low power %dmV", power_vol);
+    task_set(EV_LP);
+    power_state = POWER_STATE_LP;
+  }
 }

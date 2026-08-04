@@ -1,6 +1,7 @@
 #include "sm.h"
 #include "logger.h"
 #include "task.h"
+#include "power.h"
 
 #include "sm_main.h"
 
@@ -32,16 +33,34 @@ static uint8_t sm_cur_state;
 void sm_init(void)
 {
   SOL_LOGI(TAG, "init");
-  /*
-  sm_cur_fuction[SM_AUX_CORE_ID] = SM_SENSOR;
-  sm_cur_state[SM_AUX_CORE_ID]   = SM_SENSOR_INIT;
+  // 需要根据不同情况决定进哪一个状态，给什么事件
+  sm_cur_fuction = SM_MAIN;
 
-  sm_cur_fuction[SM_APP_CORE_ID] = SM_CLOCK;
-  sm_cur_state[SM_APP_CORE_ID]   = SM_CLOCK_INIT;
-
-  task_set_cpu(SM_APP_CORE_ID, EV_EC11_UP);
-  task_set_cpu(SM_AUX_CORE_ID, EV_EC11_UP);
-  */
+  // 如果从standby中唤醒，只可能之前状态是
+  // SM_MAIN_ADP_OFF_OLED_OFF，非首次启动
+  if(power_is_recover_from_standby()) {
+    sm_cur_state   = SM_MAIN_ADP_OFF_OLED_OFF;
+    if(power_get_wakeup_reason() == POWER_WAKEUP_ADP) {
+      SOL_LOGD(TAG, "wake by adp on");
+      task_set(EV_ADP_ON);
+    } else if (power_get_wakeup_reason() == POWER_WAKEUP_KEY) {
+      SOL_LOGD(TAG, "wake by key press");
+      task_set(EV_KEY_PRESS);
+    } else if(power_get_wakeup_reason() == POWER_WAKEUP_TIMEO) {
+      SOL_LOGD(TAG, "wake by timeout");
+      task_set(EV_TIMEO);
+    } else {
+      SOL_LOGE(TAG, "wake by unknown reason %d", power_get_wakeup_reason());
+    }
+  } else { // 首次启动
+    if(power_is_adapter_connected()) {
+      sm_cur_state = SM_MAIN_ADP_ON;
+      task_set(EV_INIT);
+    } else {
+      sm_cur_state = SM_MAIN_ADP_OFF_OLED_ON;
+      task_set(EV_INIT);
+    }
+  }
 }
 
 void sm_run(task_event_t ev)

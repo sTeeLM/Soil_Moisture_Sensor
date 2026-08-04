@@ -111,6 +111,29 @@ static const uint8_t OLED_DIG_PERCENT[] =
   /* '%' (20 X 32) */
 };                 
 
+const uint8_t OLE_EXT_ICON_ADP[] = {
+  0x00,0x00,0x00,0x00,0x00,0x80,0x60,0x18,0x86,0x80,0x80,0x80,0x00,0x00,0x00,0x00,
+  0x00,0x00,0x00,0x00,0x00,0x01,0x01,0x41,0x30,0x0C,0x03,0x00,0x00,0x00,0x00,0x00,
+  /*"D:\Lab\Soil_Moisture_Sensor\data\icons\adp.bmp",0*/
+  /* (16 X 16 )*/
+};
+
+
+const uint8_t OLE_EXT_ICON_BT[] = {
+  0x00,0x00,0x00,0x00,0x10,0x30,0x60,0xFF,0xC6,0x6C,0x38,0x10,0x00,0x00,0x00,0x00,
+  0x00,0x00,0x00,0x00,0x08,0x0C,0x02,0xFF,0x63,0x36,0x1C,0x08,0x00,0x00,0x00,0x00,
+  /*"D:\Lab\Soil_Moisture_Sensor\data\icons\bt.bmp",0*/
+  /* (16 X 16 )*/
+};
+
+const uint8_t OLE_EXT_ICON_SUN[] = {
+  0x00,0x80,0x84,0x08,0xC0,0x20,0x10,0x16,0x10,0x20,0xC0,0x08,0x84,0x80,0x00,0x00,
+  0x00,0x00,0x10,0x08,0x01,0x02,0x04,0x34,0x04,0x02,0x01,0x08,0x10,0x00,0x00,0x00,
+  /*"D:\Lab\Soil_Moisture_Sensor\data\icons\sun.bmp",0*/
+  /* (16 X 16 )*/
+};
+
+
 static const uint8_t * oled_dig_array [10] = {
   OLED_DIG_0,
   OLED_DIG_1,
@@ -175,4 +198,60 @@ void oled_ext_draw_power(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t per
       oled_fill_rect(x + 2 + (cell_w + 1) * 3, y + 2, cell_w_last, cell_h, true);
   }
   
+}
+
+// 在 x, y位置写字符串str, str是宽字符和ascii的混合(中英文混合）
+// 英文字符必须占两个字节，
+// 高位全零, 低位为ascii码
+// 两者可以使用不一样大小的font, 所有字符会顶对齐
+// ascii_font: ascii字符使用的font
+// wide_char_font: 宽字符使用的font
+// 如果字库中没有对应字符，打印一个方块
+void oled_ext_draw_wstring(
+  uint8_t x, 
+  uint8_t y, 
+  const wchar_t * str, 
+  mini_font_type_t ascii_font,
+  mini_font_type_t wide_char_font,
+  oled_draw_type_t type)
+{
+  const wchar_t * p = str;
+  const uint8_t * font = NULL;
+  uint8_t w, h, offset = 0;
+
+  while(p && *p != 0) {
+    if((font = mini_font_lookup(*p, (*p & 0xFF00) ? wide_char_font : ascii_font, &w, &h)) != NULL) {
+      oled_draw_bitmap(x + offset, y, w, h, font, type);
+    } else {
+      oled_fill_rect(x + offset, y, w, h, true);
+    }
+    p ++;
+    offset += w;
+  }
+}
+
+// 在 x, y位置写字符串str, str必须是ascii字符
+// ascii_font: ascii字符使用的font
+// 如果字库中没有对应字符，打印一个方块
+void oled_ext_draw_string(
+  uint8_t x, 
+  uint8_t y, 
+  const char * str, 
+  mini_font_type_t ascii_font,
+  oled_draw_type_t type)
+{
+  const char * p = str;
+  wchar_t c;
+  const uint8_t * font = NULL;
+  uint8_t w, h, offset = 0;
+  while(p && *p != 0) {
+    c = *p;
+    if((font = mini_font_lookup(c, ascii_font, &w, &h)) != NULL) {
+      oled_draw_bitmap(x + offset, y, w, h, font, type);
+    } else {
+      oled_fill_rect(x + offset, y, w, h, true);
+    }
+    p ++;
+    offset += w;
+  }
 }

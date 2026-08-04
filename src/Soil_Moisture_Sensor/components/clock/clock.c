@@ -2,11 +2,15 @@
 #include "clock.h"
 #include "driver/gptimer.h"
 
+#include "power.h"
 #include "sm.h"
+#include "task.h"
 
 static const char * TAG = "CLOCK";
 
 static uint64_t clock_ticks;
+static uint32_t clock_timer_saved_sec;
+static uint32_t clock_timer_diff_sec;
 
 static bool IRAM_ATTR clock_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_ctx)
 {
@@ -21,6 +25,10 @@ static bool IRAM_ATTR clock_cb(gptimer_handle_t timer, const gptimer_alarm_event
     if(clock_ticks % 25 == 0) {
       if(clock_ticks % 100 == 0) {
         task_set(EV_1S);
+        if((clock_timer_diff_sec != 0 && clock_diff_now_sec(clock_timer_saved_sec) > clock_timer_diff_sec)) {
+          clock_timer_diff_sec = 0;
+          task_set(EV_TIMEO);
+        }
       }
       if(clock_ticks % 1000 == 0) {
         task_set(EV_10S);
@@ -66,10 +74,15 @@ void clock_init(void)
   // 启动定时器
   ESP_ERROR_CHECK(gptimer_start(gptimer));
 
+  clock_timer_saved_sec = clock_timer_diff_sec = 0;
+
 }
 
 void clock_time_proc(task_event_t ev)
 {
+  if(ev == EV_1S) {
+    power_probe();
+  }
   sm_run(ev);
 }
 
@@ -81,4 +94,11 @@ uint32_t clock_diff_now_sec(uint32_t start_sec)
 {
   uint32_t now_sec = clock_get_now_sec();
   return (uint32_t)(now_sec - start_sec);
+}
+
+void clock_set_timer(uint32_t sec) 
+{
+  SOL_LOGI(TAG, "clock_set_timer %u sec", sec);
+  clock_timer_saved_sec = clock_get_now_sec();
+  clock_timer_diff_sec = sec;
 }

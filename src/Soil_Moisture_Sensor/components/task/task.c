@@ -64,11 +64,11 @@ static const TASK_PROC task_procs[EV_CNT] =
   power_proc,
   /* EV_ADP_OFF */
   power_proc,
-  /* EV_250MS*/
-  clock_time_proc,
   /* EV_1S*/
   clock_time_proc,
-  /* EV_KEY_MOD_XX */
+  /* EV_10S*/
+  clock_time_proc,
+  /* EV_KEY_** */
   key_proc,
   key_proc,
   key_proc,

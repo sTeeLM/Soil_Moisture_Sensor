@@ -47,7 +47,7 @@ void gpio_wrapper_init(void)
   ESP_ERROR_CHECK(gpio_config(&io_power_conf));
 
 
-  gpio_wrapper_set_level(GPIO_PIN_POWER_EN, 0);
+  gpio_wrapper_set_level(GPIO_PIN_POWER_EN, 1);
   io_power_conf.intr_type = GPIO_INTR_DISABLE;
   io_power_conf.mode = GPIO_MODE_OUTPUT;
   io_power_conf.pin_bit_mask = (1ULL << GPIO_PIN_POWER_EN);
@@ -55,9 +55,8 @@ void gpio_wrapper_init(void)
   io_power_conf.pull_up_en = GPIO_PULLUP_DISABLE;
   ESP_ERROR_CHECK(gpio_config(&io_power_conf));
   
-  // 如果是从睡眠中醒过来
-  if(power_recover_from_standby()) {
-    gpio_wrapper_set_level(GPIO_PIN_POWER_EN, 1);
+  // 如果是从睡眠中醒过来，需要解除hold
+  if(power_is_recover_from_standby()) {
     gpio_hold_dis(GPIO_PIN_POWER_EN); 
   }  
 
