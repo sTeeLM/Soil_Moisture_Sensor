@@ -80,9 +80,6 @@ void clock_init(void)
 
 void clock_time_proc(task_event_t ev)
 {
-  if(ev == EV_1S) {
-    power_probe();
-  }
   sm_run(ev);
 }
 

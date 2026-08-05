@@ -88,8 +88,9 @@ static void sm_main_draw_poweroff(void)
 }
 
 // 总周期 = SM_MAIN_STANDBY_SEC + SM_MAIN_REPORT_SEC
-#define  SM_MAIN_STANDBY_SEC  50  // 睡眠时间
-#define  SM_MAIN_REPORT_SEC   10  // 维持蓝牙上报事件
+#define  SM_MAIN_REPORT_SEC   5  // 维持蓝牙上报事件
+#define  SM_MAIN_STANDBY_SEC  (60 * 60 - SM_MAIN_REPORT_SEC)  // 睡眠时间
+//#define  SM_MAIN_STANDBY_SEC  (60 - SM_MAIN_REPORT_SEC)  // 睡眠时间
 #define  SM_MAIN_OLED_ON_SEC  10  // OLED点亮时间
 #define  SM_MAIN_POWER_OFF_WAIT_SEC 2  // 低电量 or 按下按键后，等待关机的时间
 

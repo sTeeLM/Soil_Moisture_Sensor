@@ -26,7 +26,7 @@ static bool RTC_DATA_ATTR power_recover;
 #define POWER_MP_THRES 4000 //中电电压
 #define POWER_LP_THRES 3600 //低电电压
 
-
+#define POWER_IIR_COEFF 16 // IIR滤波系数
 
 
 static void IRAM_ATTR power_isr_handler_adp_on (void* param)
@@ -61,7 +61,7 @@ void power_init(void)
   if(!power_sensor_data) {
     power_sensor_data = POWER_FP_THRES;
   }
-  
+
   power_state = POWER_STATE_MP;
 }
 
@@ -105,11 +105,15 @@ static uint16_t power_get_battery_voltage_mv_internal(void)
   return (uint16_t)(voltage * 1000); // 转换为毫伏
 }
 
-uint16_t power_get_battery_voltage_mv(void)
+static void power_update_battery_voltage_mv(void)
 {
   uint16_t new_val= power_get_battery_voltage_mv_internal();
   // 使用IIR滤波器平滑电压值
-  power_sensor_data = cext_iir_uint16(power_sensor_data, new_val, 4); // 4为滤波系数，可根据需要调整
+  power_sensor_data = cext_iir_uint16(power_sensor_data, new_val, POWER_IIR_COEFF); // 4为滤波系数，可根据需要调整
+}
+
+uint16_t power_get_battery_voltage_mv(void)
+{
   return power_sensor_data;
 }
 
@@ -201,8 +205,11 @@ bool power_is_recover_from_standby(void)
 
 void power_probe(void)
 {
-  uint16_t power_vol = power_get_battery_voltage_mv();
-  SOL_LOGD(TAG, "power_probe: voltage %dmV", power_vol);
+  uint16_t power_vol = 0, power_percent = 0;
+  power_update_battery_voltage_mv();
+  power_vol = power_get_battery_voltage_mv();
+  power_percent = power_get_battery_voltage_percent();
+  SOL_LOGD(TAG, "power_probe: voltage %dmV, percentage %.2f%%", power_vol, ((float)power_percent)/10.0);
   if((power_vol > POWER_MP_THRES) && (power_state == POWER_STATE_LP)) {
     SOL_LOGI(TAG, "power_probe: recover from low power %dmV", power_vol);
     task_set(EV_MP);

@@ -28,7 +28,8 @@ void ble_reporter_set_data(uint16_t hygrometer_percent,
   ble_reporter_data[1] = battery_percent;
   ble_reporter_data[2] = battery_low;
   ble_reporter_data[3] = battery_charging;
-
+  SOL_LOGD(TAG, "ble_reporter_set_data: hygrometer_percent=%d, battery_percent=%d, battery_low=%d, battery_charging=%d", 
+    hygrometer_percent, battery_percent, battery_low, battery_charging);
 }
 
 static void ble_reporter_set_data_internal(uint16_t hygrometer_percent,
