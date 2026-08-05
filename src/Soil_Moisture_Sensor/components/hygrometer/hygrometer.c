@@ -12,9 +12,8 @@
 #define HYGROMETER_MIN_VAL 3200
 
 static const char * TAG = "HYGRO";
-static uint16_t hygrometer_sensor_data;
+static uint16_t IRAM_ATTR hygrometer_sensor_data;
 static bool hygrometer_enabled;
-
 
 static uint16_t hygrometer_get_percent_internal(void);
 void hygrometer_init(void)
@@ -47,7 +46,9 @@ void hygrometer_init(void)
 
   hygrometer_enabled = false;
 
-  hygrometer_sensor_data = hygrometer_get_percent_internal();
+  if(!hygrometer_sensor_data) {
+    hygrometer_sensor_data = hygrometer_get_percent_internal();
+  }
 }
 
 void hygrometer_enable(bool enable)

@@ -13,6 +13,7 @@ bool power_is_sol_on(void);
 void power_dump(void);
 bool power_is_recover_from_standby(void);
 void power_enter_standby(uint32_t sec);
+bool power_is_battery_low(void);
 
 typedef enum _power_wakeup_reason_t
 {

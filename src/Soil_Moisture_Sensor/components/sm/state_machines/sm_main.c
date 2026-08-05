@@ -121,7 +121,11 @@ static void do_main_adp_on(uint8_t from_func, uint8_t from_state, uint8_t to_fun
       clock_set_timer(SM_MAIN_STANDBY_SEC);
     } else {
       // 启动蓝牙，并采集、上报数据
-      ble_reporter_set_data(hygrometer_get_percent(), power_get_battery_voltage_percent());
+      ble_reporter_set_data(
+        hygrometer_get_percent(), 
+        power_get_battery_voltage_percent(), 
+        power_is_battery_low() ? 1 : 0, 
+        power_is_adapter_connected() || power_is_sol_on() ? 1 : 0);
       ble_reporter_enable(true);
       sm_main_reporting = true;
       clock_set_timer(SM_MAIN_REPORT_SEC);
@@ -176,7 +180,11 @@ static void do_main_adp_off_oled_off(uint8_t from_func, uint8_t from_state, uint
       } else {
         power_probe();
         // 启动蓝牙，并采集、上报数据
-        ble_reporter_set_data(hygrometer_get_percent(), power_get_battery_voltage_percent());
+        ble_reporter_set_data(
+          hygrometer_get_percent(), 
+          power_get_battery_voltage_percent(), 
+          power_is_battery_low() ? 1 : 0, 
+          power_is_adapter_connected() || power_is_sol_on() ? 1 : 0);
         ble_reporter_enable(true);
         sm_main_reporting = true;
         clock_set_timer(SM_MAIN_REPORT_SEC);

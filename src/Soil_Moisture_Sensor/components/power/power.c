@@ -12,16 +12,22 @@
 
 static const char * TAG = "POWER";
 
-static uint16_t power_sensor_data;
+// 电压读数，mV
+static uint16_t RTC_DATA_ATTR power_sensor_data;
+// 电源唤醒原因
 static power_wakeup_reason_t power_wakeup_reason;
-
-#define POWER_VOLTAGE_FIX_OFFSITE (0.26f) // 电压偏移量，单位V
-#define POWER_FP_THRES 4200
-#define POWER_MP_THRES 4000
-#define POWER_LP_THRES 3700
+// 电源状态
 static power_state_t power_state;
-
+// 是否从standby恢复
 static bool RTC_DATA_ATTR power_recover;
+
+#define POWER_VOLTAGE_FIX_OFFSITE (0.26f) // 校准电压偏移量，单位V
+#define POWER_FP_THRES 4200 //满电电压
+#define POWER_MP_THRES 4000 //中电电压
+#define POWER_LP_THRES 3600 //低电电压
+
+
+
 
 static void IRAM_ATTR power_isr_handler_adp_on (void* param)
 {
@@ -32,6 +38,11 @@ static void IRAM_ATTR power_isr_handler_adp_on (void* param)
     task_set(EV_ADP_OFF);
     SOL_EARLY_LOGI(TAG, "power_isr_handler_adp_on: ADP_OFF");
   }
+}
+
+bool power_is_battery_low(void)
+{
+  return power_sensor_data <= POWER_MP_THRES;
 }
 
 static uint16_t power_get_battery_voltage_mv_internal(void);
@@ -47,8 +58,10 @@ void power_init(void)
   ESP_ERROR_CHECK(gpio_set_intr_type(GPIO_PIN_POWER_ADP_ON, GPIO_INTR_ANYEDGE));
   ESP_ERROR_CHECK(gpio_isr_handler_add(GPIO_PIN_POWER_ADP_ON, power_isr_handler_adp_on, NULL));
 
-  power_sensor_data = power_get_battery_voltage_mv_internal();
-
+  if(!power_sensor_data) {
+    power_sensor_data = POWER_FP_THRES;
+  }
+  
   power_state = POWER_STATE_MP;
 }
 
@@ -82,12 +95,13 @@ static uint16_t power_get_battery_voltage_mv_internal(void)
   int32_t adc_value = 0;
   float voltage = 0.0f;
   gpio_wrapper_set_level(GPIO_PIN_POWER_BATTERY_EN, 1);
-  delay_ms(10); // 等待电压稳定
+  delay_ms(100); // 等待电压稳定
   adc_value = adc_wrapper_get_value(0);
   gpio_wrapper_set_level(GPIO_PIN_POWER_BATTERY_EN, 0);
   // 根据实际的分压电路计算电池电压
   // 假设分压比为2:1，ADC参考电压为3.3V，ADC分辨率为12位
-  voltage = (adc_value / 4095.0) * 3.3 * 2 - POWER_VOLTAGE_FIX_OFFSITE; // 分压比为2:1
+  voltage = ((float)adc_value / 4095.0) * 3.3 * 2 - POWER_VOLTAGE_FIX_OFFSITE; // 分压比为2:1
+  SOL_LOGD(TAG, "power_get_battery_voltage_mv_internal: adc_value=%d, voltage=%.3fV", adc_value, voltage);
   return (uint16_t)(voltage * 1000); // 转换为毫伏
 }
 
