@@ -1,0 +1,14 @@
+Component   : BATTERY-SOL
+PCB Library : Soil_Moisture_Sensor.PcbLib
+Date        : 2026/8/8
+Time        : 13:27:59
+
+
+
+Dimension : 66.243 x 50.241 mm
+
+ Layer(s)              Pads(s)  Tracks(s)  Fill(s)  Arc(s)  Text(s)
+--------------------------------------------------------------------
+ Top Overlay                 0          0        0       0        2
+--------------------------------------------------------------------
+ Total                       0          0        0       0        2
