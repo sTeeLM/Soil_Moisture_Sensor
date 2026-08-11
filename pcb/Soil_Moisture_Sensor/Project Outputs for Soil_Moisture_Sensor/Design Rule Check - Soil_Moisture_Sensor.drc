@@ -1,7 +1,7 @@
 Protel Design System Design Rule Check
 PCB File : D:\Lab\Soil_Moisture_Sensor\pcb\Soil_Moisture_Sensor\Soil_Moisture_Sensor.PcbDoc
-Date     : 2026/8/10
-Time     : 15:36:38
+Date     : 2026/8/11
+Time     : 14:53:27
 
 Processing Rule : Clearance Constraint (Gap=0.1mm) (HasFootprint('USB-TYPE_C')),(All)
 Rule Violations :0
